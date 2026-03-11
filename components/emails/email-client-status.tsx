@@ -1,5 +1,5 @@
 interface EmailStatusTemplateProps {
-  status: "pending" | "confirmed" | "denied";
+  status: "pending" | "confirmed" | "cancelled";
   className: string;
   instructor: string;
   day: string;
@@ -34,7 +34,7 @@ export default function EmailStatusTemplate({
       borderColor: "border-emerald-200",
       label: "Confirmado",
     },
-    denied: {
+    cancelled: {
       title: "Actualización de Registro",
       message: `Lamentablemente, no hemos podido confirmar tu registro para ${className} en esta ocasión.`,
       colorClass: "text-red-600",
@@ -46,6 +46,7 @@ export default function EmailStatusTemplate({
 
   const config = statusConfig[status] || statusConfig.pending;
 
+  console.log({ status });
   return (
     <div className="font-sans leading-relaxed text-slate-800 p-6 max-w-xl mx-auto border border-slate-100 shadow-sm rounded-xl">
       {/* Cabecera Dinámica */}

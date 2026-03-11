@@ -38,7 +38,7 @@ export interface DanceClass {
   song_apple_music_url: string | null;
 }
 
-export type RegistrationStatus = "pending" | "confirmed" | "cancelled" | "attended";
+export type RegistrationStatus = "pending" | "confirmed" | "cancelled";
 export type PaymentMethod = "paypal" | "binance" | "bs" | "efectivo";
 
 export interface Registration {
@@ -58,7 +58,16 @@ export interface Registration {
 
 // Joined types used in views
 export interface RegistrationWithClass extends Registration {
-  classes: Pick<DanceClass, "id" | "title" | "instructor" | "scheduled_date" | "start_time" | "end_time">;
+  classes: Pick<
+    DanceClass,
+    | "id"
+    | "title"
+    | "instructor"
+    | "scheduled_date"
+    | "start_time"
+    | "end_time"
+    | "price"
+  >;
 }
 
 export interface RegistrationWithProfile extends Registration {

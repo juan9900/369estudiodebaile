@@ -16,7 +16,7 @@ const templates: Record<
   }
 > = {
   clientStatusChange: {
-    subject: "Inscripción registrada",
+    subject: "Estado de tu inscripción",
     component: EmailStatusTemplate,
   },
   adminClientRegistered: {

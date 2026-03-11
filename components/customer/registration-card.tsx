@@ -9,7 +9,6 @@ const statusLabels: Record<string, string> = {
   pending: "Pendiente",
   confirmed: "Confirmada",
   cancelled: "Cancelada",
-  attended: "Asistida",
 };
 
 const statusColors: Record<string, string> = {
