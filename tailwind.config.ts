@@ -9,8 +9,41 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
+    container: {
+      center: true, // Centers the container with mx-auto
+      padding: {
+        DEFAULT: "1rem", // Default padding
+        sm: "2rem",
+        lg: "4rem",
+        xl: "5rem",
+        "2xl": "6rem",
+      },
+      screens: {
+        // Overrides default screen sizes *only* for the container
+        sm: "600px",
+        md: "728px",
+        lg: "984px",
+        xl: "1240px",
+        "2xl": "1496px",
+      },
+    },
     extend: {
+      fontSize: {
+        heroTitle: [
+          "50px",
+          {
+            fontWeight: 800,
+          },
+        ],
+      },
+      fontFamily: {
+        montserrat: ["var(--font-montserrat)", "sans-serif"],
+        inter: ["var(--font-inter)", "sans-serif"],
+      },
       colors: {
+        textColor: {
+          DEFAULT: "#222222",
+        },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {
@@ -22,8 +55,9 @@ export default {
           foreground: "hsl(var(--popover-foreground))",
         },
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: " #8B1E3F",
+          dark: " #6b1730",
+          darker: " #571327",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -51,11 +85,27 @@ export default {
           "4": "hsl(var(--chart-4))",
           "5": "hsl(var(--chart-5))",
         },
+        light: "hsl(var(--light))",
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      backgroundImage: {
+        bannerImg: "url(/images/hero.webp)",
+        blackOverlay:
+          "radial-gradient(circle, rgba(0,0,0,.8) 100%, rgba(0,0,0,0) 100%)",
+      },
+      animation: {
+        marquee: "marquee 25s linear infinite",
+        "spin-slow": "spin 8s linear infinite",
+      },
+      keyframes: {
+        marquee: {
+          "0%": { transform: "translateX(0%)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
       },
     },
   },
