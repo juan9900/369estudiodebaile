@@ -21,6 +21,8 @@ export interface DanceClass {
   max_capacity: number;
   current_enrollment: number;
   price: number | null;
+  genre: number;
+  level: number;
   is_active: boolean;
   created_by: string | null;
   created_at: string;

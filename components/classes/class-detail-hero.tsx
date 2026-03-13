@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { CLASS_LEVELS } from "@/constants";
 
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1504609813442-a8924e83f76e?w=1600&h=900&fit=crop";
@@ -58,10 +59,22 @@ export function ClassDetailHero({ danceClass }: ClassDetailHeroProps) {
               </div>
             )}
 
-            {danceClass.difficulty_level && (
+            {danceClass.level && (
               <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full border border-white/30">
                 <span className="text-white font-bold text-sm capitalize">
-                  {danceClass.difficulty_level}
+                  {
+                    CLASS_LEVELS.find(
+                      (level) => level.levelNumber == danceClass.level,
+                    )?.levelText
+                  }
+                </span>
+              </div>
+            )}
+
+            {danceClass.genre && (
+              <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full border border-white/30">
+                <span className="text-white font-bold text-sm capitalize">
+                  {danceClass.genre}
                 </span>
               </div>
             )}

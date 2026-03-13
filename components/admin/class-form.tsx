@@ -7,6 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
+import { CLASS_LEVELS } from "@/constants";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 interface ClassFormProps {
   initialData?: DanceClass;
@@ -26,6 +36,8 @@ export function ClassForm({ initialData }: ClassFormProps) {
     end_time: initialData?.end_time?.slice(0, 5) ?? "",
     max_capacity: initialData?.max_capacity ?? 20,
     price: initialData?.price?.toString() ?? "",
+    genre: initialData?.genre ?? "",
+    level: initialData?.level ?? 1,
     is_active: initialData?.is_active ?? true,
     video_url: initialData?.video_url ?? "",
     song_title: initialData?.song_title ?? "",
@@ -66,6 +78,8 @@ export function ClassForm({ initialData }: ClassFormProps) {
       end_time: form.end_time,
       max_capacity: Number(form.max_capacity),
       price: form.price ? Number(form.price) : null,
+      genre: form.genre,
+      level: form.level ? Number(form.level) : 1,
       is_active: form.is_active,
       video_url: form.video_url || null,
       song_title: form.song_title || null,
@@ -196,7 +210,50 @@ export function ClassForm({ initialData }: ClassFormProps) {
           />
         </div>
       </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-2">
+          <Label htmlFor="max_capacity">Género</Label>
+          <Input
+            id="genre"
+            name="genre"
+            type="text"
+            min={1}
+            value={form.genre}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
+        <div className="grid gap-2">
+          <Label htmlFor="price">Nivel</Label>
+          <div className="w-full ">
+            {" "}
+            <Select
+              value={form.level.toString()}
+              onValueChange={(e) => {
+                setForm((prev) => ({ ...prev, level: Number(e) }));
+              }}
+            >
+              <SelectTrigger className="w-full ">
+                <SelectValue placeholder="Escoge un nivel" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Niveles</SelectLabel>
+                  {CLASS_LEVELS.map((level) => (
+                    <SelectItem
+                      key={level.levelText}
+                      value={level.levelNumber.toString()}
+                    >
+                      {level.levelText}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
       <div className="flex items-center gap-2">
         <input
           type="checkbox"
@@ -291,7 +348,7 @@ export function ClassForm({ initialData }: ClassFormProps) {
       <div className="flex gap-3">
         <Button
           type="submit"
-          className="bg-primary hover:bg-[#6d1730]"
+          className="bg-primary hover:bg-[#6d1730] text-white"
           disabled={loading}
         >
           {loading

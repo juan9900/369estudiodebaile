@@ -55,7 +55,7 @@ export default function AdminClassesPage() {
           </p>
         </div>
         <Link href="/admin/classes/new">
-          <Button className="bg-primary hover:bg-[#6d1730]">
+          <Button className="bg-primary hover:bg-[#6d1730] text-white">
             <Plus size={16} className="mr-2" />
             Nueva clase
           </Button>

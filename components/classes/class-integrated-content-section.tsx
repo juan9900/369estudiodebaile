@@ -9,9 +9,6 @@ import { CheckCircle2, Music2 } from "lucide-react";
 const FALLBACK_PHOTO =
   "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&crop=face";
 
-const DEFAULT_BIO =
-  "Profesional de la danza con años de experiencia en formación y escenario. Apasionado por compartir el ritmo y la cultura del baile con cada alumno.";
-
 interface YouTubeEmbedData {
   embedUrl: string | null;
   isShorts: boolean;
@@ -79,12 +76,8 @@ export function ClassIntegratedContentSection({
   danceClass,
 }: ClassIntegratedContentSectionProps) {
   const photo = danceClass.instructor_photo_url || FALLBACK_PHOTO;
-  const bio = danceClass.instructor_bio || DEFAULT_BIO;
   const [expanded, setExpanded] = useState(false);
   const [vinylHovered, setVinylHovered] = useState(false);
-
-  // Check if bio is long enough to need expansion
-  const needsExpansion = bio.length > 200;
 
   // Video and song data
   const { embedUrl, isShorts } = getYouTubeEmbedUrl(danceClass.video_url);
@@ -127,21 +120,7 @@ export function ClassIntegratedContentSection({
             </div>
 
             {/* Bio with expand/collapse */}
-            <p
-              className={`text-gray-600 leading-relaxed text-base ${!expanded && needsExpansion ? "line-clamp-4" : ""}`}
-            >
-              {bio}
-            </p>
 
-            {needsExpansion && (
-              <Button
-                variant="ghost"
-                onClick={() => setExpanded(!expanded)}
-                className="mt-3 text-primary hover:text-[#DC143C] hover:bg-primary/5 font-bold"
-              >
-                {expanded ? "Leer menos" : "Leer más"}
-              </Button>
-            )}
             {hasSong && (
               <div className="bg-gray-50 rounded-2xl p-6 mt-10 border border-gray-200">
                 <div className="flex gap-4 items-center mb-4">
