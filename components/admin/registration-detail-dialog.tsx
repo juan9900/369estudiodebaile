@@ -21,7 +21,7 @@ import type {
 } from "@/lib/types/database";
 
 const paymentMethodLabels: Record<string, string> = {
-  paypal: "PayPal",
+  zelle: "Zelle",
   binance: "Binance",
   bs: "Bs",
   efectivo: "Efectivo",
@@ -209,6 +209,7 @@ export function RegistrationDetailDialog({
               !selectedStatus ||
               selectedStatus === registration.status
             }
+            className="text-white"
           >
             {saving ? "Guardando..." : "Guardar"}
           </Button>

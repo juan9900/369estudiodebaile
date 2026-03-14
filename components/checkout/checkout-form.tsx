@@ -12,7 +12,7 @@ import { Resend } from "resend";
 import Link from "next/link";
 
 const PAYMENT_OPTIONS: { value: PaymentMethod; label: string }[] = [
-  { value: "paypal", label: "PayPal" },
+  { value: "zelle", label: "Zelle" },
   { value: "binance", label: "Binance" },
   { value: "bs", label: "Bolivares (Bs)" },
   { value: "efectivo", label: "Efectivo" },
@@ -35,7 +35,10 @@ export function CheckoutForm({ danceClass, step, setStep }: CheckoutFormProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(
     null,
   );
-  const [transactionId, setTransactionId] = useState("");
+  const [reference, setReference] = useState("");
+  const [titular, setTitular] = useState("");
+  const [paymentEmail, setPaymentEmail] = useState("");
+  const [cedula, setCedula] = useState("");
 
   // Submission state
   const [loading, setLoading] = useState(false);
@@ -49,9 +52,25 @@ export function CheckoutForm({ danceClass, step, setStep }: CheckoutFormProps) {
     email.trim().includes("@");
 
   // Payment validation
-  const paymentValid =
-    paymentMethod !== null &&
-    (paymentMethod === "efectivo" || transactionId.trim().length > 0);
+  const paymentValid = (() => {
+    if (!paymentMethod) return false;
+    if (paymentMethod === "efectivo") return true;
+    if (paymentMethod === "zelle")
+      return (
+        reference.trim().length > 0 &&
+        titular.trim().length > 0 &&
+        paymentEmail.trim().includes("@")
+      );
+    if (paymentMethod === "binance")
+      return reference.trim().length > 0 && paymentEmail.trim().includes("@");
+    if (paymentMethod === "bs")
+      return (
+        reference.trim().length > 0 &&
+        cedula.trim().length > 0 &&
+        titular.trim().length > 0
+      );
+    return false;
+  })();
 
   async function sendNotification({
     name,
@@ -86,7 +105,7 @@ export function CheckoutForm({ danceClass, step, setStep }: CheckoutFormProps) {
                 hour: danceClass.start_time,
                 price: danceClass.price,
                 paymentMethod: paymentMethod,
-                transactionId: transactionId,
+                transactionId: reference,
               },
             },
             {
@@ -130,12 +149,20 @@ export function CheckoutForm({ danceClass, step, setStep }: CheckoutFormProps) {
       data: { user },
     } = await supabase.auth.getUser();
 
+    const extraNotes = [
+      titular.trim() && `Titular: ${titular.trim()}`,
+      paymentEmail.trim() && `Correo Pago: ${paymentEmail.trim()}`,
+      cedula.trim() && `Cédula: ${cedula.trim()}`,
+    ]
+      .filter(Boolean)
+      .join(" | ");
+
     const { error: insertError } = await supabase.from("registrations").insert({
       class_id: danceClass.id,
       status: "pending",
       payment_method: paymentMethod,
-      transaction_id:
-        paymentMethod === "efectivo" ? null : transactionId.trim(),
+      transaction_id: paymentMethod === "efectivo" ? null : reference.trim(),
+      notes: extraNotes || null,
       contact_name: name.trim(),
       contact_lastname: lastname.trim(),
       contact_phone: phone.trim(),
@@ -312,19 +339,117 @@ export function CheckoutForm({ danceClass, step, setStep }: CheckoutFormProps) {
       {/* Mock payment details */}
       {paymentMethod && <PaymentInfo method={paymentMethod} />}
 
-      {/* Transaction ID (hidden for efectivo) */}
-      {paymentMethod && paymentMethod !== "efectivo" && (
-        <div className="space-y-1">
-          <Label htmlFor="checkout-txid" className="text-white/80">
-            Comprobante / ID de transacción
-          </Label>
-          <Input
-            id="checkout-txid"
-            placeholder="TX-xxxxxxxxx"
-            value={transactionId}
-            onChange={(e) => setTransactionId(e.target.value)}
-            className="bg-white text-textColor placeholder:text-gray-300 py-5"
-          />
+      {/* Method-specific fields */}
+      {paymentMethod === "zelle" && (
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <Label htmlFor="checkout-ref" className="text-white/80">
+              Número de referencia
+            </Label>
+            <Input
+              id="checkout-ref"
+              placeholder="REF-xxxxxxxxx"
+              value={reference}
+              onChange={(e) => setReference(e.target.value)}
+              className="bg-white text-primary placeholder:text-gray-400 py-5"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="checkout-titular" className="text-white/80">
+              Titular
+            </Label>
+            <Input
+              id="checkout-titular"
+              placeholder="Nombre del titular"
+              value={titular}
+              onChange={(e) => setTitular(e.target.value)}
+              className="bg-white text-primary placeholder:text-gray-400 py-5"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="checkout-pemail" className="text-white/80">
+              Correo
+            </Label>
+            <Input
+              id="checkout-pemail"
+              type="email"
+              placeholder="titular@ejemplo.com"
+              value={paymentEmail}
+              onChange={(e) => setPaymentEmail(e.target.value)}
+              className="bg-white text-primary placeholder:text-gray-400 py-5"
+            />
+          </div>
+        </div>
+      )}
+
+      {paymentMethod === "binance" && (
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <Label htmlFor="checkout-ref" className="text-white/80">
+              Número de referencia
+            </Label>
+            <Input
+              id="checkout-ref"
+              placeholder="REF-xxxxxxxxx"
+              value={reference}
+              onChange={(e) => setReference(e.target.value)}
+              className="bg-white text-primary placeholder:text-gray-400 py-5"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="checkout-pemail" className="text-white/80">
+              Correo
+            </Label>
+            <Input
+              id="checkout-pemail"
+              type="email"
+              placeholder="titular@ejemplo.com"
+              value={paymentEmail}
+              onChange={(e) => setPaymentEmail(e.target.value)}
+              className="bg-white text-primary placeholder:text-gray-400 py-5"
+            />
+          </div>
+        </div>
+      )}
+
+      {paymentMethod === "bs" && (
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <Label htmlFor="checkout-ref" className="text-white/80">
+              Número de referencia
+            </Label>
+            <Input
+              id="checkout-ref"
+              placeholder="REF-xxxxxxxxx"
+              value={reference}
+              onChange={(e) => setReference(e.target.value)}
+              className="bg-white text-primary placeholder:text-gray-400 py-5"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="checkout-cedula" className="text-white/80">
+              Cédula
+            </Label>
+            <Input
+              id="checkout-cedula"
+              placeholder="V-12345678"
+              value={cedula}
+              onChange={(e) => setCedula(e.target.value)}
+              className="bg-white text-primary placeholder:text-gray-400 py-5"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="checkout-titular" className="text-white/80">
+              Titular
+            </Label>
+            <Input
+              id="checkout-titular"
+              placeholder="Nombre del titular"
+              value={titular}
+              onChange={(e) => setTitular(e.target.value)}
+              className="bg-white text-primary placeholder:text-gray-400 py-5"
+            />
+          </div>
         </div>
       )}
 

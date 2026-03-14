@@ -27,6 +27,7 @@ const templates: Record<
 
 export async function POST(req: Request) {
   const { messages } = await req.json();
+  console.log(messages);
 
   messages.forEach(
     async (message: { template: string; payload: any; toEmail?: string }) => {
