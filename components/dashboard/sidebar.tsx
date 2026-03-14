@@ -12,6 +12,7 @@ import {
   GraduationCap,
   FileText,
   ImageIcon,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -32,6 +33,7 @@ const adminLinks = [
   { href: "/admin/registrations", label: "Inscripciones", icon: FileText },
   { href: "/admin/users", label: "Usuarios", icon: Users },
   { href: "/admin/media", label: "Medios", icon: ImageIcon },
+  { href: "/admin/settings", label: "Ajustes", icon: Settings },
 ];
 
 export function Sidebar() {

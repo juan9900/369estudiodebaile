@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { DanceClass } from "@/lib/types/database";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,11 @@ import {
 } from "../ui/select";
 import { MediaPickerDialog } from "@/components/admin/media-picker-dialog";
 import Image from "next/image";
+import {
+  generateTimeSlots,
+  getOccupiedSlots,
+  formatTimeAMPM,
+} from "@/lib/utils/time-slots";
 
 interface ClassFormProps {
   initialData?: DanceClass;
@@ -54,6 +59,82 @@ export function ClassForm({ initialData }: ClassFormProps) {
     song_apple_music_url: initialData?.song_apple_music_url ?? "",
   });
 
+  const [openingTime, setOpeningTime] = useState("08:00");
+  const [closingTime, setClosingTime] = useState("22:00");
+  const [existingClasses, setExistingClasses] = useState<
+    { id: string; start_time: string; end_time: string }[]
+  >([]);
+
+  // Fetch studio settings on mount
+  useEffect(() => {
+    async function fetchSettings() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("studio_settings")
+        .select("opening_time, closing_time")
+        .single();
+      if (data) {
+        setOpeningTime(data.opening_time.slice(0, 5));
+        setClosingTime(data.closing_time.slice(0, 5));
+      }
+    }
+    fetchSettings();
+  }, []);
+
+  // Fetch existing classes when scheduled_date changes
+  useEffect(() => {
+    if (!form.scheduled_date) {
+      setExistingClasses([]);
+      return;
+    }
+    async function fetchClasses() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("classes")
+        .select("id, start_time, end_time")
+        .eq("scheduled_date", form.scheduled_date);
+      if (data) {
+        // Exclude the current class when editing
+        const filtered = initialData?.id
+          ? data.filter((c) => c.id !== initialData.id)
+          : data;
+        setExistingClasses(filtered);
+      }
+    }
+    fetchClasses();
+  }, [form.scheduled_date, initialData?.id]);
+
+  const allSlots = generateTimeSlots(openingTime, closingTime);
+  const occupiedSlots = getOccupiedSlots(existingClasses, allSlots);
+
+  // End-time slots: only slots strictly after start_time, capped at next occupied slot
+  const endTimeSlots = (() => {
+    if (!form.start_time) return [];
+    const afterStart = allSlots.filter((s) => s > form.start_time);
+
+    // Find the earliest occupied slot after start_time (which would be another class's start)
+    // We cap end_time at the start of the next existing class
+    let cap: string | null = null;
+    for (const cls of existingClasses) {
+      const clsStart = cls.start_time.slice(0, 5);
+      if (clsStart > form.start_time) {
+        if (cap === null || clsStart < cap) {
+          cap = clsStart;
+        }
+      }
+    }
+
+    if (!cap) return afterStart;
+
+    // Subtract 30 min from cap to enforce the gap: if next class starts at 13:00,
+    // your class must end by 12:30 at the latest.
+    const [capH, capM] = cap.split(":").map(Number);
+    const capMinus30 = capH * 60 + capM - 30;
+    const adjustedCap = `${String(Math.floor(capMinus30 / 60)).padStart(2, "0")}:${String(capMinus30 % 60).padStart(2, "0")}`;
+
+    return afterStart.filter((s) => s <= adjustedCap);
+  })();
+
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) {
@@ -62,6 +143,15 @@ export function ClassForm({ initialData }: ClassFormProps) {
       ...prev,
       [name]:
         type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+    }));
+  }
+
+  function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setForm((prev) => ({
+      ...prev,
+      scheduled_date: e.target.value,
+      start_time: "",
+      end_time: "",
     }));
   }
 
@@ -162,7 +252,7 @@ export function ClassForm({ initialData }: ClassFormProps) {
           name="scheduled_date"
           type="date"
           value={form.scheduled_date}
-          onChange={handleChange}
+          onChange={handleDateChange}
           required
         />
       </div>
@@ -170,25 +260,55 @@ export function ClassForm({ initialData }: ClassFormProps) {
       <div className="grid grid-cols-2 gap-4">
         <div className="grid gap-2">
           <Label htmlFor="start_time">Hora inicio</Label>
-          <Input
-            id="start_time"
-            name="start_time"
-            type="time"
+          <Select
             value={form.start_time}
-            onChange={handleChange}
-            required
-          />
+            onValueChange={(val) =>
+              setForm((prev) => ({ ...prev, start_time: val, end_time: "" }))
+            }
+            disabled={!form.scheduled_date}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Seleccionar" />
+            </SelectTrigger>
+            <SelectContent>
+              {allSlots.map((slot) => {
+                const blocked = occupiedSlots.has(slot);
+                return (
+                  <SelectItem key={slot} value={slot} disabled={blocked}>
+                    {formatTimeAMPM(slot)}
+                    {blocked ? " (ocupado)" : ""}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
         </div>
         <div className="grid gap-2">
           <Label htmlFor="end_time">Hora fin</Label>
-          <Input
-            id="end_time"
-            name="end_time"
-            type="time"
+          <Select
             value={form.end_time}
-            onChange={handleChange}
-            required
-          />
+            onValueChange={(val) =>
+              setForm((prev) => ({ ...prev, end_time: val }))
+            }
+            disabled={!form.start_time || endTimeSlots.length === 0}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue
+                placeholder={
+                  form.start_time && endTimeSlots.length === 0
+                    ? "No disponible"
+                    : "Seleccionar"
+                }
+              />
+            </SelectTrigger>
+            <SelectContent>
+              {endTimeSlots.map((slot) => (
+                <SelectItem key={slot} value={slot}>
+                  {formatTimeAMPM(slot)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -221,7 +341,7 @@ export function ClassForm({ initialData }: ClassFormProps) {
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="max_capacity">Género</Label>
+          <Label htmlFor="genre">Género</Label>
           <Input
             id="genre"
             name="genre"
@@ -234,7 +354,7 @@ export function ClassForm({ initialData }: ClassFormProps) {
         </div>
 
         <div className="grid gap-2">
-          <Label htmlFor="price">Nivel</Label>
+          <Label htmlFor="level">Nivel</Label>
           <div className="w-full ">
             {" "}
             <Select
