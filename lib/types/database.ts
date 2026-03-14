@@ -41,7 +41,7 @@ export interface DanceClass {
 }
 
 export type RegistrationStatus = "pending" | "confirmed" | "cancelled";
-export type PaymentMethod = "paypal" | "binance" | "bs" | "efectivo";
+export type PaymentMethod = "zelle" | "binance" | "bs" | "efectivo";
 
 export interface Registration {
   id: string;

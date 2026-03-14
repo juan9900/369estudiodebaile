@@ -1,17 +1,23 @@
 import type { PaymentMethod } from "@/lib/types/database";
 
-const PAYMENT_DETAILS: Record<string, { label: string; info: string }> = {
-  paypal: {
-    label: "PayPal",
-    info: "Envía el pago a: pagos369@example.com",
-  },
+const PAYMENT_DETAILS: Record<
+  string,
+  { label: string; info: string; accountHolder?: string }
+> = {
   binance: {
     label: "Binance Pay",
-    info: "Binance User ID: 369EstudioID",
+    info: "Binance Email: cynthiaagonzalez@hotmail.com",
+    accountHolder: "Cynthia González",
   },
   bs: {
     label: "Bolivares (Bs)",
-    info: "Banco XYZ – Cuenta: 0000-1234-5678",
+    info: "Banco XYZ – Cédula: 28137184 - Tlf: 0424-6023604",
+    accountHolder: "Juan Lauretta",
+  },
+  zelle: {
+    label: "Zelle",
+    info: "Correo: Yemilgonzalez@hotmail.com",
+    accountHolder: "Yemil González",
   },
   efectivo: {
     label: "Efectivo",
