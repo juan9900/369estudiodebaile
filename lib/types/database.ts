@@ -58,6 +58,13 @@ export interface Registration {
   contact_email: string;
 }
 
+export interface StudioSettings {
+  id: string;
+  opening_time: string;
+  closing_time: string;
+  updated_at: string;
+}
+
 // Joined types used in views
 export interface RegistrationWithClass extends Registration {
   classes: Pick<
