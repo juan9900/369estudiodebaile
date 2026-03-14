@@ -90,11 +90,11 @@ export function ClassIntegratedContentSection({
 
   return (
     <section className="py-16 px-6 bg-white">
-      <div className="container mx-auto max-w-7xl">
+      <div className="container mx-auto max-w-7xl ">
         <div className="grid lg:grid-cols-2 gap-8 items-start">
           {/* LEFT: Instructor Information */}
-          <div className="bg-gray-50 rounded-2xl p-8 border border-gray-200">
-            <div className="flex gap-6 items-start mb-6">
+          <div className="bg-gray-50 rounded-2xl p-4 border border-gray-200 ">
+            <div className="flex flex-col items-center  lg:flex-row  gap-6 lg:items-start mb-6">
               {/* Photo with animated border */}
               <div className="relative w-32 h-32 flex-shrink-0">
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary via-[#DC143C] to-primary p-1 ">
@@ -108,13 +108,13 @@ export function ClassIntegratedContentSection({
                 </div>
               </div>
 
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 w-full text-center ">
                 <Badge className="mb-2 bg-primary/10 text-primary border-primary/20">
                   <CheckCircle2 className="w-3 h-3 mr-1" />
                   Instructor Verificado
                 </Badge>
-                <h3 className="text-3xl font-black text-gray-900">
-                  Instructor: {danceClass.instructor}
+                <h3 className="lg:text-3xl font-black text-gray-900 text-2xl">
+                  {danceClass.instructor}
                 </h3>
               </div>
             </div>

@@ -29,7 +29,7 @@ export function ClassesSection() {
       const { data } = await supabase
         .from("classes")
         .select("*, registrations(count)")
-        .eq("registrations.status", "confirmed")
+        .in("registrations.status", ["confirmed", "pending"])
         .eq("is_active", true)
         .order("scheduled_date", { ascending: true });
       if (data)
@@ -51,28 +51,12 @@ export function ClassesSection() {
         <div className="flex justify-between items-end mb-12">
           <div>
             <p className="text-sm font-bold text-primary mb-2 tracking-wider">
-              PROGRAMA INTENSIVO
+              CLASES
             </p>
             <h2 className="text-5xl font-black text-[#1a1a1a]">
-              PRÓXIMO SÁBADO
+              PRÓXIMAS CLASES
             </h2>
           </div>
-          <a
-            href="#"
-            className="text-sm font-bold text-primary flex items-center gap-2 hover:gap-3 transition-all"
-          >
-            EXPLORA
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </a>
         </div>
 
         {loading ? (

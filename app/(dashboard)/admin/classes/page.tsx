@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { Plus, Pencil } from "lucide-react";
+import { Plus, Pencil, Users } from "lucide-react";
 
 export default function AdminClassesPage() {
   const [classes, setClasses] = useState<DanceClass[]>([]);
@@ -19,7 +19,7 @@ export default function AdminClassesPage() {
       const { data } = await supabase
         .from("classes")
         .select("*, registrations(count)")
-        .eq("registrations.status", "confirmed")
+        .in("registrations.status", ["confirmed", "pending"])
         .order("scheduled_date", { ascending: false });
       if (data)
         setClasses(
@@ -95,6 +95,11 @@ export default function AdminClassesPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
+                    <Link href={`/admin/classes/${cls.id}/registrations`}>
+                      <button className="p-2 text-gray-400 hover:text-primary transition-colors">
+                        <Users size={16} />
+                      </button>
+                    </Link>
                     <Link href={`/admin/classes/${cls.id}/edit`}>
                       <button className="p-2 text-gray-400 hover:text-primary transition-colors">
                         <Pencil size={16} />

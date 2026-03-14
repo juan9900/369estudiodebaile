@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PaymentInfo } from "@/components/checkout/payment-info";
-import { BadgeCheck } from "lucide-react";
+import { ArrowRight, BadgeCheck } from "lucide-react";
 import { Resend } from "resend";
+import Link from "next/link";
 
 const PAYMENT_OPTIONS: { value: PaymentMethod; label: string }[] = [
   { value: "paypal", label: "PayPal" },
@@ -184,6 +185,12 @@ export function CheckoutForm({ danceClass, step, setStep }: CheckoutFormProps) {
           Tu estado es{" "}
           <span className="text-yellow-300 font-semibold">pendiente</span>
         </p>
+        <Link href={`/`}>
+          <Button className="mt-5 bg-white  text-primary hover:bg-gray-100 font-black text-base h-12 px-8 group shadow-lg hover:shadow-xl transition-all">
+            VOLVER A INICIO
+            <ArrowRight className="ml-2 transition-transform group-hover:translate-x-1" />
+          </Button>
+        </Link>
       </div>
     );
   }

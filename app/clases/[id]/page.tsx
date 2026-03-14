@@ -16,7 +16,7 @@ export default async function ClassDetailPage({
   const { data } = await supabase
     .from("classes")
     .select("*, registrations(count)")
-    .eq("registrations.status", "confirmed")
+    .in("registrations.status", ["confirmed", "pending"])
     .eq("id", classId)
     .eq("is_active", true)
     .single();
