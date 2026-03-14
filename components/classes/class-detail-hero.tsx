@@ -79,23 +79,40 @@ export function ClassDetailHero({ danceClass }: ClassDetailHeroProps) {
               </div>
             )}
 
-            <div
-              className={`backdrop-blur-sm px-4 py-2 rounded-full border ${
-                spotsLeft <= 5
-                  ? "bg-red-500/30 border-red-300/50"
-                  : "bg-white/20 border-white/30"
-              }`}
-            >
-              <span className="text-white font-bold text-sm">
-                {spotsLeft}{" "}
-                {spotsLeft === 1 ? "lugar disponible" : "lugares disponibles"}
-              </span>
-            </div>
+            {spotsLeft > 0 ? (
+              <div
+                className={`backdrop-blur-sm px-4 py-2 rounded-full border ${
+                  spotsLeft <= 5
+                    ? "bg-red-500/30 border-red-300/50"
+                    : "bg-white/20 border-white/30"
+                }`}
+              >
+                <span className="text-white font-bold text-sm">
+                  {spotsLeft}{" "}
+                  {spotsLeft === 1 ? "lugar disponible" : "lugares disponibles"}
+                </span>
+              </div>
+            ) : (
+              <div
+                className={`backdrop-blur-sm px-4 py-2 rounded-full border ${
+                  spotsLeft <= 5
+                    ? "bg-red-500/30 border-red-300/50"
+                    : "bg-white/20 border-white/30"
+                }`}
+              >
+                <span className="text-white font-bold text-sm">
+                  ¡Clase llena!
+                </span>
+              </div>
+            )}
           </div>
 
           {/* CTA */}
           <Link href={`/clases/${danceClass.id}#reservar`}>
-            <Button className="bg-white text-primary hover:bg-gray-100 font-black text-base h-12 px-8 group shadow-lg hover:shadow-xl transition-all">
+            <Button
+              disabled={spotsLeft > 0 ? false : true}
+              className=" bg-white  text-primary hover:bg-gray-100 font-black text-base h-12 px-8 group shadow-lg hover:shadow-xl transition-all"
+            >
               RESERVAR AHORA
               <ArrowRight className="ml-2 transition-transform group-hover:translate-x-1" />
             </Button>

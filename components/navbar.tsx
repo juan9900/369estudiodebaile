@@ -68,15 +68,12 @@ export const Navbar = () => {
           >
             CONTACTO
           </Link>
-          <Button className="bg-primary hover:bg-[#6d1730] text-white font-bold px-6">
-            REGÍSTRATE
-          </Button>
         </div>
 
         {/* Mobile Hamburger Button */}
         <button
           onClick={toggleMenu}
-          className="md:hidden text-[#1a1a1a] hover:text-primary transition-colors"
+          className=" z-[99999] md:hidden text-[#1a1a1a] hover:text-primary transition-colors"
           aria-label={isOpen ? "Close menu" : "Open menu"}
           aria-expanded={isOpen}
         >
@@ -112,12 +109,6 @@ export const Navbar = () => {
             >
               CONTACTO
             </Link>
-            <Button
-              onClick={closeMenu}
-              className="bg-primary hover:bg-[#6d1730] text-white font-bold px-8 py-6 text-xl"
-            >
-              REGÍSTRATE
-            </Button>
           </div>
         </div>
       )}

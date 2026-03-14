@@ -59,10 +59,10 @@ export function ClassCtaSection({ danceClass }: ClassCtaSectionProps) {
   return (
     <section
       id="reservar"
-      className="py-20 px-6 bg-gradient-to-b from-white to-[#F5F5F0]"
+      className="py-20 lg:px-6 bg-gradient-to-b from-white to-[#F5F5F0]"
     >
       <div className="container mx-auto max-w-4xl">
-        <Card className="shadow-2xl border-2 border-gray-100">
+        <Card className="shadow-2xl border-2 border-gray-100 w-full">
           <CardContent className="p-10">
             {/* Urgency badge */}
             {!isFull && spotsLeft <= 5 && (
@@ -144,7 +144,7 @@ export function ClassCtaSection({ danceClass }: ClassCtaSectionProps) {
             <Button
               onClick={() => router.push(`/clases/${danceClass.id}/checkout`)}
               disabled={isFull}
-              className="w-full h-16 text-xl font-black bg-gradient-to-r from-primary to-[#DC143C] hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed group mb-4 text-white"
+              className="w-full h-10 lg:h-16 text-md lg:text-xl font-black bg-gradient-to-r from-primary to-[#DC143C] hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed group mb-4 text-white"
             >
               {isFull ? "CLASE LLENA" : "RESERVAR MI LUGAR"}
               {!isFull && (
@@ -153,18 +153,15 @@ export function ClassCtaSection({ danceClass }: ClassCtaSectionProps) {
             </Button>
 
             {/* Secondary actions */}
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                variant="outline"
-                className="font-bold border-gray-300 hover:border-primary hover:text-primary"
-                onClick={() => {
-                  // Placeholder for future implementation
-                  alert("Función próximamente disponible");
-                }}
+            <div className="grid lg:grid-cols-2 gap-3">
+              <a
+                target="_blank"
+                href="https://wa.me/584246257045"
+                className="font-bold border rounded-md bg-gray-50 text-sm cursor-pointer border-gray-300 hover:border-primary hover:text-primary flex flex-row items-center justify-center lg:py-0 py-2"
               >
                 <MessageCircle className="w-4 h-4 mr-2" />
                 Hacer Pregunta
-              </Button>
+              </a>
               <Button
                 variant="outline"
                 className="font-bold border-gray-300 hover:border-primary hover:text-primary"
