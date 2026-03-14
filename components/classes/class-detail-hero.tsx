@@ -1,7 +1,7 @@
 import type { DanceClass } from "@/lib/types/database";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { CLASS_LEVELS } from "@/constants";
 
@@ -26,6 +26,17 @@ export function ClassDetailHero({ danceClass }: ClassDetailHeroProps) {
 
       {/* Dark overlay gradient */}
       <div className="absolute inset-0 bg-gradient-to-t from-primary/95 via-primary/70 to-transparent" />
+
+      {/* Back button */}
+      <div className="absolute top-6 left-6 z-10">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/30 text-white font-bold px-4 py-2 rounded-full hover:bg-white/30 transition-colors text-sm"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Volver al inicio
+        </Link>
+      </div>
 
       {/* Content positioned at bottom */}
       <div className="relative z-10 w-full px-6 py-16">
