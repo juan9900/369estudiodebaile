@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { DanceClass } from "@/lib/types/database";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { MediaPickerDialog } from "@/components/admin/media-picker-dialog";
+import Image from "next/image";
 
 interface ClassFormProps {
   initialData?: DanceClass;
@@ -26,6 +28,9 @@ export function ClassForm({ initialData }: ClassFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pickerField, setPickerField] = useState<
+    "image_url" | "instructor_photo_url" | null
+  >(null);
 
   const [form, setForm] = useState({
     title: initialData?.title ?? "",
@@ -39,6 +44,8 @@ export function ClassForm({ initialData }: ClassFormProps) {
     genre: initialData?.genre ?? "",
     level: initialData?.level ?? 1,
     is_active: initialData?.is_active ?? true,
+    image_url: initialData?.image_url ?? "",
+    instructor_photo_url: initialData?.instructor_photo_url ?? "",
     video_url: initialData?.video_url ?? "",
     song_title: initialData?.song_title ?? "",
     song_artist: initialData?.song_artist ?? "",
@@ -81,6 +88,8 @@ export function ClassForm({ initialData }: ClassFormProps) {
       genre: form.genre,
       level: form.level ? Number(form.level) : 1,
       is_active: form.is_active,
+      image_url: form.image_url || null,
+      instructor_photo_url: form.instructor_photo_url || null,
       video_url: form.video_url || null,
       song_title: form.song_title || null,
       song_artist: form.song_artist || null,
@@ -265,6 +274,69 @@ export function ClassForm({ initialData }: ClassFormProps) {
         />
         <Label htmlFor="is_active">Clase activa</Label>
       </div>
+
+      <div className="border-t pt-5">
+        <h3 className="text-lg font-semibold mb-4">Imágenes</h3>
+        <div className="grid grid-cols-2 gap-6">
+          {(
+            [
+              { field: "image_url", label: "Imagen de la clase" },
+              {
+                field: "instructor_photo_url",
+                label: "Foto del instructor",
+              },
+            ] as const
+          ).map(({ field, label }) => (
+            <div key={field} className="grid gap-2">
+              <Label>{label}</Label>
+              {form[field] && (
+                <div className="relative w-full aspect-video rounded-md overflow-hidden border">
+                  <Image
+                    src={form[field]}
+                    alt={label}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 50vw, 25vw"
+                  />
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPickerField(field)}
+                >
+                  {form[field] ? "Cambiar imagen" : "Seleccionar imagen"}
+                </Button>
+                {form[field] && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      setForm((prev) => ({ ...prev, [field]: "" }))
+                    }
+                  >
+                    Quitar
+                  </Button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <MediaPickerDialog
+        open={pickerField !== null}
+        onOpenChange={(open) => !open && setPickerField(null)}
+        onSelect={(url) => {
+          if (pickerField) {
+            setForm((prev) => ({ ...prev, [pickerField]: url }));
+          }
+          setPickerField(null);
+        }}
+      />
 
       <div className="border-t pt-5">
         <h3 className="text-lg font-semibold mb-4">Canción y video</h3>
