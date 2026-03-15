@@ -1,0 +1,2 @@
+ALTER TABLE classes ADD COLUMN cancelled_at TIMESTAMPTZ DEFAULT NULL;
+ALTER TABLE registrations ADD COLUMN money_returned BOOLEAN DEFAULT false;

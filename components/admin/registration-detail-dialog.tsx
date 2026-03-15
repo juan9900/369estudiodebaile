@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   statusLabels,
   statusColors,
@@ -33,7 +34,11 @@ interface RegistrationDetailDialogProps {
   registration: RegistrationWithClass | null;
   open: boolean;
   onClose: () => void;
-  onStatusChange: (id: string, newStatus: RegistrationStatus) => Promise<void>;
+  onStatusChange: (
+    id: string,
+    newStatus: RegistrationStatus,
+    moneyReturned?: boolean,
+  ) => Promise<void>;
 }
 
 export function RegistrationDetailDialog({
@@ -44,6 +49,9 @@ export function RegistrationDetailDialog({
 }: RegistrationDetailDialogProps) {
   const [selectedStatus, setSelectedStatus] =
     useState<RegistrationStatus | null>(null);
+  const [moneyReturned, setMoneyReturned] = useState(
+    registration?.money_returned ?? false,
+  );
   const [saving, setSaving] = useState(false);
 
   // Keep local status in sync when dialog opens with a new registration
@@ -53,6 +61,7 @@ export function RegistrationDetailDialog({
     if (!isOpen) {
       onClose();
       setSelectedStatus(null);
+      setMoneyReturned(false);
     }
   };
 
@@ -65,7 +74,11 @@ export function RegistrationDetailDialog({
       return;
     setSaving(true);
     try {
-      await onStatusChange(registration.id, selectedStatus);
+      await onStatusChange(
+        registration.id,
+        selectedStatus,
+        currentStatus === "cancelled" ? moneyReturned : undefined,
+      );
       const response = await fetch("/api/send", {
         method: "POST",
         headers: {
@@ -98,6 +111,7 @@ export function RegistrationDetailDialog({
     } finally {
       setSaving(false);
       setSelectedStatus(null);
+      setMoneyReturned(false);
       onClose();
     }
   };
@@ -183,6 +197,7 @@ export function RegistrationDetailDialog({
                   type="button"
                   onClick={() => {
                     setSelectedStatus(s);
+                    if (s !== "cancelled") setMoneyReturned(false);
                   }}
                   className={[
                     "px-3 py-1 rounded-full text-sm border transition-colors",
@@ -196,6 +211,25 @@ export function RegistrationDetailDialog({
               ))}
             </div>
           </Section>
+
+          {currentStatus === "cancelled" && (
+            <div className="flex items-center gap-2">
+              <Checkbox
+                className="text-white"
+                id="money-returned"
+                checked={moneyReturned}
+                onCheckedChange={(checked) =>
+                  setMoneyReturned(checked === true)
+                }
+              />
+              <label
+                htmlFor="money-returned"
+                className="text-sm text-gray-700 cursor-pointer"
+              >
+                Dinero devuelto al cliente
+              </label>
+            </div>
+          )}
         </div>
 
         <DialogFooter>

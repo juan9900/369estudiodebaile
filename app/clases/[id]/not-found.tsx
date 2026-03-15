@@ -13,7 +13,7 @@ export default function NotFound() {
         principal para ver las clases activas.
       </p>
       <Link href="/#clases">
-        <Button className="bg-primary hover:bg-[#6d1730] font-bold">
+        <Button className="bg-primary hover:bg-[#6d1730] font-bold text-white">
           Ver todas las clases
         </Button>
       </Link>

@@ -75,7 +75,7 @@ export function ClassCtaSection({ danceClass }: ClassCtaSectionProps) {
             )}
 
             {/* Title */}
-            <h2 className="text-4xl md:text-5xl font-black text-center bg-gradient-to-r from-primary to-[#DC143C] bg-clip-text text-transparent mb-8">
+            <h2 className="text-4xl md:text-5xl font-black text-center text-primary mb-8">
               ¿Listo para bailar?
             </h2>
 
@@ -144,7 +144,7 @@ export function ClassCtaSection({ danceClass }: ClassCtaSectionProps) {
             <Button
               onClick={() => router.push(`/clases/${danceClass.id}/checkout`)}
               disabled={isFull}
-              className="w-full h-10 lg:h-16 text-md lg:text-xl font-black bg-gradient-to-r from-primary to-[#DC143C] hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed group mb-4 text-white"
+              className="w-full h-10 lg:h-16 text-md lg:text-xl font-black bg-primary hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed group mb-4 text-white"
             >
               {isFull ? "CLASE LLENA" : "RESERVAR MI LUGAR"}
               {!isFull && (

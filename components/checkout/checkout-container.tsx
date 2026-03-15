@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import { DanceClass } from "@/lib/types/database";
 import { CheckoutForm } from "./checkout-form";
+import { formatDate } from "../classes-section";
 
 export default function CheckOutContainer({
   danceClass,
@@ -16,16 +17,19 @@ export default function CheckOutContainer({
       {/* Class summary header */}
       {step !== 3 && (
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-black text-white mb-1">
-            {danceClass.title}
+          <h1 className="text-7xl font-black uppercase text-white mb-1">
+            <span className="text-3xl block">Clase de:</span> {danceClass.genre}
           </h1>
-          <p className="text-white/60 text-sm">
-            {danceClass.instructor} · {danceClass.scheduled_date} ·{" "}
+          <h2 className="text-white text-xl font-bol">
+            {danceClass.instructor}
+          </h2>
+          <p className="text-white/60 text-lg">
+            {formatDate(danceClass.scheduled_date)} ·{" "}
             {danceClass.start_time.slice(0, 5)} –{" "}
             {danceClass.end_time.slice(0, 5)}
           </p>
           {danceClass.price != null && (
-            <p className="text-white font-semibold mt-1">
+            <p className="text-white text-xl font-semibold mt-1">
               Precio: $<span className="font-black">{danceClass.price}</span>
             </p>
           )}

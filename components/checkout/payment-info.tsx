@@ -6,11 +6,11 @@ const PAYMENT_DETAILS: Record<
 > = {
   binance: {
     label: "Binance Pay",
-    info: "Binance Email: cynthiaagonzalez@hotmail.com",
+    info: "Email: cynthiaagonzalez@hotmail.com",
     accountHolder: "Cynthia González",
   },
   bs: {
-    label: "Bolivares (Bs)",
+    label: "Bolivares",
     info: "Banco XYZ – Cédula: 28137184 - Tlf: 0424-6023604",
     accountHolder: "Juan Lauretta",
   },
@@ -39,6 +39,12 @@ export function PaymentInfo({ method }: PaymentInfoProps) {
         {detail.label}
       </p>
       <p className="text-textColor text-sm">{detail.info}</p>
+
+      {detail.accountHolder && (
+        <p className="text-textColor text-sm">
+          Titular: {detail.accountHolder}
+        </p>
+      )}
     </div>
   );
 }

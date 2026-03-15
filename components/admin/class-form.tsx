@@ -23,6 +23,7 @@ import {
   generateTimeSlots,
   getOccupiedSlots,
   formatTimeAMPM,
+  addMinutes,
 } from "@/lib/utils/time-slots";
 
 interface ClassFormProps {
@@ -49,6 +50,7 @@ export function ClassForm({ initialData }: ClassFormProps) {
     genre: initialData?.genre ?? "",
     level: initialData?.level ?? 1,
     is_active: initialData?.is_active ?? true,
+    is_masterclass: initialData?.is_masterclass ?? false,
     image_url: initialData?.image_url ?? "",
     instructor_photo_url: initialData?.instructor_photo_url ?? "",
     video_url: initialData?.video_url ?? "",
@@ -106,6 +108,19 @@ export function ClassForm({ initialData }: ClassFormProps) {
 
   const allSlots = generateTimeSlots(openingTime, closingTime);
   const occupiedSlots = getOccupiedSlots(existingClasses, allSlots);
+
+  // For normal classes, a start slot is only valid if the full 1-hour block is free
+  const startTimeSlots = allSlots.filter((slot) => {
+    if (occupiedSlots.has(slot)) return false;
+    if (!form.is_masterclass) {
+      const endSlot = addMinutes(slot, 60);
+      // end slot must not exceed closing time
+      if (endSlot > closingTime) return false;
+      // the slot at start+1h must also be free (not occupied by another class)
+      if (occupiedSlots.has(endSlot)) return false;
+    }
+    return true;
+  });
 
   // End-time slots: only slots strictly after start_time, capped at next occupied slot
   const endTimeSlots = (() => {
@@ -178,6 +193,7 @@ export function ClassForm({ initialData }: ClassFormProps) {
       genre: form.genre,
       level: form.level ? Number(form.level) : 1,
       is_active: form.is_active,
+      is_masterclass: form.is_masterclass,
       image_url: form.image_url || null,
       instructor_photo_url: form.instructor_photo_url || null,
       video_url: form.video_url || null,
@@ -209,8 +225,57 @@ export function ClassForm({ initialData }: ClassFormProps) {
     }
   }
 
+  const normalClassSlots = {
+    Saturday: [
+      { start: "09:00", end: "10:00" },
+      { start: "10:30", end: "11:30" },
+      { start: "13:00", end: "14:00" },
+      { start: "14:30", end: "15:30" },
+      { start: "16:00", end: "17:00" },
+      { start: "17:30", end: "18:30" },
+    ],
+    Sunday: [
+      { start: "10:00", end: "11:00" },
+      { start: "11:30", end: "12:30" },
+      { start: "13:30", end: "14:30" },
+      { start: "15:00", end: "16:00" },
+      { start: "16:30", end: "17:30" },
+    ],
+  };
+
+  const getDayOfWeek = (dateStr: string): string => {
+    const date = new Date(dateStr + "T00:00:00Z");
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    return days[date.getUTCDay()];
+  };
+
+  const currentDay = form.scheduled_date ? getDayOfWeek(form.scheduled_date) : "";
+  const isValidDayForNormalClass = currentDay === "Saturday" || currentDay === "Sunday";
+  const normalClassSlotsForDay = currentDay === "Saturday" ? normalClassSlots.Saturday : currentDay === "Sunday" ? normalClassSlots.Sunday : [];
+
   return (
     <form onSubmit={handleSubmit} className="space-y-5 max-w-xl">
+      <div className="flex items-center gap-2 p-4 bg-muted rounded-lg">
+        <input
+          type="checkbox"
+          id="is_masterclass"
+          name="is_masterclass"
+          checked={form.is_masterclass}
+          onChange={(e) => {
+            setForm((prev) => ({
+              ...prev,
+              is_masterclass: e.target.checked,
+              start_time: "",
+              end_time: "",
+            }));
+          }}
+          className="rounded"
+        />
+        <Label htmlFor="is_masterclass" className="font-semibold">
+          Masterclass
+        </Label>
+      </div>
+
       <div className="grid gap-2">
         <Label htmlFor="title">Nombre de la clase</Label>
         <Input
@@ -246,7 +311,9 @@ export function ClassForm({ initialData }: ClassFormProps) {
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="scheduled_date">Fecha</Label>
+        <Label htmlFor="scheduled_date">
+          {form.is_masterclass ? "Fecha" : "Fecha (Sábado o Domingo)"}
+        </Label>
         <Input
           id="scheduled_date"
           name="scheduled_date"
@@ -255,62 +322,99 @@ export function ClassForm({ initialData }: ClassFormProps) {
           onChange={handleDateChange}
           required
         />
+        {!form.is_masterclass && form.scheduled_date && !isValidDayForNormalClass && (
+          <p className="text-sm text-red-500">Las clases normales deben ser sábado o domingo</p>
+        )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      {form.is_masterclass ? (
+        <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="start_time">Hora inicio</Label>
+            <Select
+              value={form.start_time}
+              onValueChange={(val) =>
+                setForm((prev) => ({ ...prev, start_time: val, end_time: "" }))
+              }
+              disabled={!form.scheduled_date}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Seleccionar" />
+              </SelectTrigger>
+              <SelectContent>
+                {startTimeSlots.map((slot) => (
+                  <SelectItem key={slot} value={slot}>
+                    {formatTimeAMPM(slot)}
+                  </SelectItem>
+                ))}
+                {allSlots
+                  .filter((slot) => !startTimeSlots.includes(slot))
+                  .map((slot) => (
+                    <SelectItem key={slot} value={slot} disabled>
+                      {formatTimeAMPM(slot)} (ocupado)
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="end_time">Hora fin</Label>
+            <Select
+              value={form.end_time}
+              onValueChange={(val) =>
+                setForm((prev) => ({ ...prev, end_time: val }))
+              }
+              disabled={!form.start_time || endTimeSlots.length === 0}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue
+                  placeholder={
+                    form.start_time && endTimeSlots.length === 0
+                      ? "No disponible"
+                      : "Seleccionar"
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {endTimeSlots.map((slot) => (
+                  <SelectItem key={slot} value={slot}>
+                    {formatTimeAMPM(slot)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      ) : (
         <div className="grid gap-2">
-          <Label htmlFor="start_time">Hora inicio</Label>
+          <Label>Horario</Label>
           <Select
             value={form.start_time}
-            onValueChange={(val) =>
-              setForm((prev) => ({ ...prev, start_time: val, end_time: "" }))
-            }
-            disabled={!form.scheduled_date}
+            onValueChange={(val) => {
+              const slotData = normalClassSlotsForDay.find((s) => s.start === val);
+              if (slotData) {
+                setForm((prev) => ({
+                  ...prev,
+                  start_time: slotData.start,
+                  end_time: slotData.end,
+                }));
+              }
+            }}
+            disabled={!form.scheduled_date || !isValidDayForNormalClass}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Seleccionar" />
+              <SelectValue placeholder={isValidDayForNormalClass ? "Seleccionar horario" : "Selecciona un sábado o domingo"} />
             </SelectTrigger>
             <SelectContent>
-              {allSlots.map((slot) => {
-                const blocked = occupiedSlots.has(slot);
-                return (
-                  <SelectItem key={slot} value={slot} disabled={blocked}>
-                    {formatTimeAMPM(slot)}
-                    {blocked ? " (ocupado)" : ""}
-                  </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="end_time">Hora fin</Label>
-          <Select
-            value={form.end_time}
-            onValueChange={(val) =>
-              setForm((prev) => ({ ...prev, end_time: val }))
-            }
-            disabled={!form.start_time || endTimeSlots.length === 0}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue
-                placeholder={
-                  form.start_time && endTimeSlots.length === 0
-                    ? "No disponible"
-                    : "Seleccionar"
-                }
-              />
-            </SelectTrigger>
-            <SelectContent>
-              {endTimeSlots.map((slot) => (
-                <SelectItem key={slot} value={slot}>
-                  {formatTimeAMPM(slot)}
+              {normalClassSlotsForDay.map((slot) => (
+                <SelectItem key={slot.start} value={slot.start}>
+                  {formatTimeAMPM(slot.start)} – {formatTimeAMPM(slot.end)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
-      </div>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <div className="grid gap-2">
@@ -498,18 +602,6 @@ export function ClassForm({ initialData }: ClassFormProps) {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="song_spotify_url">Enlace de Spotify</Label>
-            <Input
-              id="song_spotify_url"
-              name="song_spotify_url"
-              type="url"
-              value={form.song_spotify_url}
-              onChange={handleChange}
-              placeholder="https://open.spotify.com/track/..."
-            />
-          </div>
-
-          <div className="grid gap-2">
             <Label htmlFor="song_youtube_url">Enlace de YouTube Music</Label>
             <Input
               id="song_youtube_url"
@@ -518,18 +610,6 @@ export function ClassForm({ initialData }: ClassFormProps) {
               value={form.song_youtube_url}
               onChange={handleChange}
               placeholder="https://music.youtube.com/watch?v=..."
-            />
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="song_apple_music_url">Enlace de Apple Music</Label>
-            <Input
-              id="song_apple_music_url"
-              name="song_apple_music_url"
-              type="url"
-              value={form.song_apple_music_url}
-              onChange={handleChange}
-              placeholder="https://music.apple.com/..."
             />
           </div>
         </div>

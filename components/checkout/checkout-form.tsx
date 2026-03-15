@@ -7,14 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PaymentInfo } from "@/components/checkout/payment-info";
-import { ArrowRight, BadgeCheck } from "lucide-react";
+import { ArrowRight, BadgeCheck, SquareCheck } from "lucide-react";
 import { Resend } from "resend";
 import Link from "next/link";
 
 const PAYMENT_OPTIONS: { value: PaymentMethod; label: string }[] = [
   { value: "zelle", label: "Zelle" },
   { value: "binance", label: "Binance" },
-  { value: "bs", label: "Bolivares (Bs)" },
+  { value: "bs", label: "Bolivares" },
   { value: "efectivo", label: "Efectivo" },
 ];
 
@@ -194,24 +194,20 @@ export function CheckoutForm({ danceClass, step, setStep }: CheckoutFormProps) {
     return (
       <div className="text-center py-12">
         <div className="text-6xl mb-4 flex justify-center items-center text-white">
-          <BadgeCheck size={90} />
+          <SquareCheck size={70} />
         </div>
         <h2 className="text-4xl font-black text-white mb-2">
-          ¡Reserva confirmada!
+          ¡Tu reserva se ha registrado!
         </h2>
-        <p className="text-white/70 text-lg mb-1">
-          Tu lugar en{" "}
-          <span className="text-white font-semibold">{danceClass.title}</span>{" "}
-          está reservado.
+        <p className="text-white my-6 text-lg uppercase font-bold">
+          Tu estado es{" "}
+          <span className="text-yellow-300 font-semibold">pendiente</span>
         </p>
         <p className="text-white/50 text-lg">
           Se envió un resumen a{" "}
           <span className="text-white/80">{email.trim()}</span>.
         </p>
-        <p className="text-white mt-6 text-xl uppercase font-bold">
-          Tu estado es{" "}
-          <span className="text-yellow-300 font-semibold">pendiente</span>
-        </p>
+
         <Link href={`/`}>
           <Button className="mt-5 bg-white  text-primary hover:bg-gray-100 font-black text-base h-12 px-8 group shadow-lg hover:shadow-xl transition-all">
             VOLVER A INICIO
