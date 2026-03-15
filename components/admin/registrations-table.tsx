@@ -69,23 +69,27 @@ export function RegistrationsTable({ classId }: RegistrationsTableProps) {
   }, [fetchData]);
 
   const onStatusChange = useCallback(
-    async (id: string, newStatus: RegistrationStatus) => {
-      const reg = registrations.find((r) => r.id === id);
-      if (!reg) return;
-
+    async (id: string, newStatus: RegistrationStatus, moneyReturned?: boolean) => {
       const supabase = createClient();
-      const oldStatus = reg.status;
 
-      await supabase
-        .from("registrations")
-        .update({ status: newStatus })
-        .eq("id", id);
+      const payload: Record<string, unknown> = { status: newStatus };
+      if (moneyReturned !== undefined) payload.money_returned = moneyReturned;
+
+      await supabase.from("registrations").update(payload).eq("id", id);
 
       setRegistrations((prev) =>
-        prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r)),
+        prev.map((r) =>
+          r.id === id
+            ? {
+                ...r,
+                status: newStatus,
+                ...(moneyReturned !== undefined ? { money_returned: moneyReturned } : {}),
+              }
+            : r,
+        ),
       );
     },
-    [registrations],
+    [],
   );
 
   const pageCount = Math.ceil(totalCount / PAGE_SIZE);

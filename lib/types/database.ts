@@ -24,6 +24,8 @@ export interface DanceClass {
   genre: number;
   level: number;
   is_active: boolean;
+  is_masterclass: boolean;
+  cancelled_at: string | null;
   created_by: string | null;
   created_at: string;
   // Detail-page fields (added in migration 002)
@@ -56,6 +58,7 @@ export interface Registration {
   contact_lastname: string;
   contact_phone: string;
   contact_email: string;
+  money_returned: boolean;
 }
 
 export interface StudioSettings {

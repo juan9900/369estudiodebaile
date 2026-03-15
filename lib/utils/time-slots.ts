@@ -32,7 +32,7 @@ export function formatTimeAMPM(time: string): string {
 /**
  * Adds `minutes` to a "HH:MM" string and returns the result as "HH:MM".
  */
-function addMinutes(time: string, minutes: number): string {
+export function addMinutes(time: string, minutes: number): string {
   const [h, m] = time.split(":").map(Number);
   const total = h * 60 + m + minutes;
   const newH = Math.floor(total / 60) % 24;

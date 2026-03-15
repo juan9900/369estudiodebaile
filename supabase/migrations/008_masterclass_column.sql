@@ -1,0 +1,1 @@
+ALTER TABLE classes ADD COLUMN is_masterclass BOOLEAN NOT NULL DEFAULT false;

@@ -20,12 +20,12 @@ function formatTime(time: string) {
   return `${h12}:${m.toString().padStart(2, "0")} ${ampm}`;
 }
 
-function formatDate(date: string) {
+export function formatDate(date: string) {
   const [year, month, day] = date.split("-").map(Number);
   return new Date(year, month - 1, day).toLocaleDateString("es-ES", {
     day: "numeric",
     month: "short",
-    weekday: "short",
+    weekday: "long",
   });
 }
 
@@ -86,9 +86,6 @@ export function ClassesSection() {
       <div className="container mx-auto">
         <div className="flex justify-between items-end mb-12">
           <div>
-            <p className="text-sm font-bold text-primary mb-2 tracking-wider">
-              CLASES
-            </p>
             <h2 className="text-5xl font-black text-[#1a1a1a]">
               PRÓXIMAS CLASES
             </h2>
@@ -150,21 +147,24 @@ export function ClassesSection() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-primary/95 via-primary/60 to-transparent" />
 
-                  <div className="relative z-10 bg-white text-primary font-bold px-4 py-2 rounded-full text-sm w-fit">
-                    {formatDate(cls.scheduled_date)} ·{" "}
-                    {formatTime(cls.start_time)}
-                  </div>
-
-                  <div className="relative z-10 space-y-3">
-                    <h3 className="text-3xl font-black text-white">
-                      {cls.title.toUpperCase()}
-                    </h3>
-                    <p className="text-white/90 text-sm">
-                      Instructor: {cls.instructor}
-                    </p>
-                    <Button className="w-full bg-white text-primary hover:bg-gray-100 font-bold">
-                      RESERVAR
-                    </Button>
+                  <div className="relative z-10 space-y-1  flex flex-col justify-between h-full">
+                    <div>
+                      <h3 className="text-3xl font-black text-white">
+                        {cls.title.toUpperCase()}
+                      </h3>
+                      <p className="text-white/90 text-md font-bold ">
+                        Instructor: {cls.instructor}
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-4 ">
+                      <div className="flex flex-col items-start relative z-10 text-white uppercase font-bold  py-2 rounded-md text-2xl w-fit ">
+                        <span>{formatDate(cls.scheduled_date)}</span>
+                        <span>{formatTime(cls.start_time)}</span>
+                      </div>
+                      <Button className="w-full bg-white text-primary hover:bg-gray-100 font-bold">
+                        RESERVAR
+                      </Button>
+                    </div>
                   </div>
                 </Link>
               );

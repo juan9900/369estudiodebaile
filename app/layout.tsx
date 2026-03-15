@@ -35,7 +35,6 @@ export default function RootLayout({
     <html lang="es">
       <body className={`${montserrat.variable} ${inter.variable} antialiased`}>
         {children}
-        <Footer />
 
         {/* Floating WhatsApp Button */}
         <a

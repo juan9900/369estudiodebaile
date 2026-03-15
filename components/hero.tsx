@@ -9,14 +9,10 @@ export function Hero() {
 
       <div className="container mx-auto relative z-10">
         <div className="max-w-4xl">
-          <span className="inline-block bg-primary text-white text-sm font-bold px-4 py-2 rounded-full mb-4 tracking-wider">
-            MUEVE TU CUERPO
-          </span>
-
           <h1 className="text-5xl md:text-8xl font-black text-[#1a1a1a] mb-8 leading-none">
-            ESTUDIO DE
+            <span className="text-primary">369</span> ESTUDIO
             <br />
-            BAILE 369
+            DE BAILE
           </h1>
 
           <div className="flex items-start gap-4 mb-8">

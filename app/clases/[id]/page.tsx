@@ -4,6 +4,7 @@ import { ClassDetailHero } from "@/components/classes/class-detail-hero";
 import { ClassIntegratedContentSection } from "@/components/classes/class-integrated-content-section";
 import { ClassCtaSection } from "@/components/classes/class-cta-section";
 import { notFound } from "next/navigation";
+import { Footer } from "@/components/footer";
 
 export default async function ClassDetailPage({
   params,
@@ -25,7 +26,8 @@ export default async function ClassDetailPage({
 
   const danceClass = {
     ...data,
-    current_enrollment: (data.registrations as { count: number }[])?.[0]?.count ?? 0,
+    current_enrollment:
+      (data.registrations as { count: number }[])?.[0]?.count ?? 0,
   } as DanceClass;
 
   return (
