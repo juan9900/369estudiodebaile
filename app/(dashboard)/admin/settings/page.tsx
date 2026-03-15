@@ -6,6 +6,7 @@ import type { StudioSettings } from "@/lib/types/database";
 import { generateTimeSlots, formatTimeAMPM } from "@/lib/utils/time-slots";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -20,6 +21,7 @@ export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<StudioSettings | null>(null);
   const [openingTime, setOpeningTime] = useState("08:00");
   const [closingTime, setClosingTime] = useState("22:00");
+  const [cashDepositPercentage, setCashDepositPercentage] = useState(10);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +38,7 @@ export default function AdminSettingsPage() {
         setSettings(data);
         setOpeningTime(data.opening_time.slice(0, 5));
         setClosingTime(data.closing_time.slice(0, 5));
+        setCashDepositPercentage(data.cash_deposit_percentage ?? 10);
       }
       if (error) console.error(error);
       setLoading(false);
@@ -60,6 +63,7 @@ export default function AdminSettingsPage() {
       .update({
         opening_time: openingTime,
         closing_time: closingTime,
+        cash_deposit_percentage: cashDepositPercentage,
         updated_at: new Date().toISOString(),
       })
       .eq("id", settings.id);
@@ -116,6 +120,26 @@ export default function AdminSettingsPage() {
               ))}
             </SelectContent>
           </Select>
+        </div>
+        <div className="grid gap-2">
+          <Label>Porcentaje de reserva (efectivo)</Label>
+          <Input
+            type="number"
+            min={0}
+            max={100}
+            value={cashDepositPercentage}
+            onChange={(e) =>
+              setCashDepositPercentage(
+                Math.min(100, Math.max(0, Number(e.target.value)))
+              )
+            }
+            className="w-full"
+          />
+          <p className="text-xs text-gray-500">
+            Porcentaje del precio de la clase requerido como depósito anticipado
+            cuando el cliente elige pagar en efectivo. El resto se abona en el
+            estudio el día de la clase.
+          </p>
         </div>
       </div>
 

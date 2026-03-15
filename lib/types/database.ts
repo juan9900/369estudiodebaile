@@ -37,9 +37,7 @@ export interface DanceClass {
   difficulty_level: "principiante" | "intermedio" | "avanzado" | null;
   song_title: string | null;
   song_artist: string | null;
-  song_spotify_url: string | null;
   song_youtube_url: string | null;
-  song_apple_music_url: string | null;
 }
 
 export type RegistrationStatus = "pending" | "confirmed" | "cancelled";
@@ -65,6 +63,7 @@ export interface StudioSettings {
   id: string;
   opening_time: string;
   closing_time: string;
+  cash_deposit_percentage: number;
   updated_at: string;
 }
 
