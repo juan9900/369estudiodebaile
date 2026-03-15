@@ -7,8 +7,10 @@ import { formatDate } from "../classes-section";
 
 export default function CheckOutContainer({
   danceClass,
+  cashDepositPercentage,
 }: {
   danceClass: DanceClass;
+  cashDepositPercentage: number;
 }) {
   // Step state
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -37,7 +39,7 @@ export default function CheckOutContainer({
       )}
 
       {/* Multi-step form */}
-      <CheckoutForm step={step} setStep={setStep} danceClass={danceClass} />
+      <CheckoutForm step={step} setStep={setStep} danceClass={danceClass} cashDepositPercentage={cashDepositPercentage} />
     </>
   );
 }

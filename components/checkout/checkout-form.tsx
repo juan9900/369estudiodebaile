@@ -22,9 +22,15 @@ interface CheckoutFormProps {
   danceClass: DanceClass;
   step: 1 | 2 | 3;
   setStep: React.Dispatch<React.SetStateAction<1 | 2 | 3>>;
+  cashDepositPercentage: number;
 }
 
-export function CheckoutForm({ danceClass, step, setStep }: CheckoutFormProps) {
+export function CheckoutForm({
+  danceClass,
+  step,
+  setStep,
+  cashDepositPercentage,
+}: CheckoutFormProps) {
   // Contact fields
   const [name, setName] = useState("");
   const [lastname, setLastname] = useState("");
@@ -40,9 +46,22 @@ export function CheckoutForm({ danceClass, step, setStep }: CheckoutFormProps) {
   const [paymentEmail, setPaymentEmail] = useState("");
   const [cedula, setCedula] = useState("");
 
+  // Efectivo sub-method state
+  const [efectivoMode, setEfectivoMode] = useState<
+    "deposit" | "full_cash" | null
+  >(null);
+  const [efectivoSubMethod, setEfectivoSubMethod] = useState<
+    "zelle" | "binance" | "bs" | null
+  >(null);
+
   // Submission state
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const depositAmount =
+    danceClass.price != null
+      ? Math.ceil((danceClass.price * cashDepositPercentage) / 100)
+      : 0;
 
   // Contact validation
   const contactValid =
@@ -54,7 +73,27 @@ export function CheckoutForm({ danceClass, step, setStep }: CheckoutFormProps) {
   // Payment validation
   const paymentValid = (() => {
     if (!paymentMethod) return false;
-    if (paymentMethod === "efectivo") return true;
+    if (paymentMethod === "efectivo") {
+      if (!efectivoMode) return false;
+      if (efectivoMode === "full_cash") return true;
+      // efectivoMode === "deposit"
+      if (!efectivoSubMethod) return false;
+      if (efectivoSubMethod === "zelle")
+        return (
+          reference.trim().length > 0 &&
+          titular.trim().length > 0 &&
+          paymentEmail.trim().includes("@")
+        );
+      if (efectivoSubMethod === "binance")
+        return reference.trim().length > 0 && paymentEmail.trim().includes("@");
+      if (efectivoSubMethod === "bs")
+        return (
+          reference.trim().length > 0 &&
+          cedula.trim().length > 0 &&
+          titular.trim().length > 0
+        );
+      return false;
+    }
     if (paymentMethod === "zelle")
       return (
         reference.trim().length > 0 &&
@@ -149,19 +188,39 @@ export function CheckoutForm({ danceClass, step, setStep }: CheckoutFormProps) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const extraNotes = [
-      titular.trim() && `Titular: ${titular.trim()}`,
-      paymentEmail.trim() && `Correo Pago: ${paymentEmail.trim()}`,
-      cedula.trim() && `Cédula: ${cedula.trim()}`,
-    ]
-      .filter(Boolean)
-      .join(" | ");
+    let extraNotes: string;
+    if (paymentMethod === "efectivo") {
+      if (efectivoMode === "full_cash") {
+        extraNotes = "Pago completo en efectivo en estudio";
+      } else {
+        const parts = [
+          `Depósito vía ${efectivoSubMethod}`,
+          titular.trim() && `Titular: ${titular.trim()}`,
+          paymentEmail.trim() && `Correo Pago: ${paymentEmail.trim()}`,
+          cedula.trim() && `Cédula: ${cedula.trim()}`,
+        ].filter(Boolean);
+        extraNotes = parts.join(" | ");
+      }
+    } else {
+      extraNotes = [
+        titular.trim() && `Titular: ${titular.trim()}`,
+        paymentEmail.trim() && `Correo Pago: ${paymentEmail.trim()}`,
+        cedula.trim() && `Cédula: ${cedula.trim()}`,
+      ]
+        .filter(Boolean)
+        .join(" | ");
+    }
 
     const { error: insertError } = await supabase.from("registrations").insert({
       class_id: danceClass.id,
       status: "pending",
       payment_method: paymentMethod,
-      transaction_id: paymentMethod === "efectivo" ? null : reference.trim(),
+      transaction_id:
+        paymentMethod === "efectivo" && efectivoMode === "deposit"
+          ? reference.trim() || null
+          : paymentMethod === "efectivo"
+            ? null
+            : reference.trim(),
       notes: extraNotes || null,
       contact_name: name.trim(),
       contact_lastname: lastname.trim(),
@@ -311,7 +370,13 @@ export function CheckoutForm({ danceClass, step, setStep }: CheckoutFormProps) {
           <button
             key={opt.value}
             type="button"
-            onClick={() => setPaymentMethod(opt.value)}
+            onClick={() => {
+              setPaymentMethod(opt.value);
+              if (opt.value !== "efectivo") {
+                setEfectivoMode(null);
+                setEfectivoSubMethod(null);
+              }
+            }}
             className={[
               "rounded-lg border p-3 text-left transition-colors",
               paymentMethod === opt.value
@@ -323,8 +388,7 @@ export function CheckoutForm({ danceClass, step, setStep }: CheckoutFormProps) {
               className="inline-block w-4 h-4 rounded-full border-2 mr-2 align-middle"
               style={{
                 borderColor: paymentMethod === opt.value ? "#fff" : "#8B1E3F",
-                background:
-                  paymentMethod === opt.value ? "#60152A" : "transparent",
+                background: "#fff",
               }}
             />
             {opt.label}
@@ -332,10 +396,255 @@ export function CheckoutForm({ danceClass, step, setStep }: CheckoutFormProps) {
         ))}
       </div>
 
-      {/* Mock payment details */}
-      {paymentMethod && <PaymentInfo method={paymentMethod} />}
+      {/* Payment details / efectivo sub-flow */}
+      {paymentMethod && paymentMethod !== "efectivo" && (
+        <PaymentInfo method={paymentMethod} />
+      )}
 
-      {/* Method-specific fields */}
+      {paymentMethod === "efectivo" && (
+        <div className="space-y-4">
+          {/* Mode selector */}
+          <div className="grid grid-cols-1 gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setEfectivoMode("deposit");
+                setEfectivoSubMethod(null);
+                setReference("");
+                setTitular("");
+                setPaymentEmail("");
+                setCedula("");
+              }}
+              className={[
+                "rounded-lg border p-3 text-left transition-colors",
+                efectivoMode === "deposit"
+                  ? "border-[#60152A] bg-[#60152A] text-white font-bold"
+                  : "bg-white text-primary hover:bg-gray-200 font-bold",
+              ].join(" ")}
+            >
+              <span
+                className="inline-block w-4 h-4 rounded-full border-2 mr-2 align-middle"
+                style={{
+                  borderColor: efectivoMode === "deposit" ? "#fff" : "#8B1E3F",
+                  background: "#fff",
+                }}
+              />
+              Reservar con depósito online
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setEfectivoMode("full_cash");
+                setEfectivoSubMethod(null);
+                setReference("");
+                setTitular("");
+                setPaymentEmail("");
+                setCedula("");
+              }}
+              className={[
+                "rounded-lg border p-3 text-left transition-colors",
+                efectivoMode === "full_cash"
+                  ? "border-[#60152A] bg-[#60152A] text-white font-bold"
+                  : "bg-white text-primary hover:bg-gray-200 font-bold",
+              ].join(" ")}
+            >
+              <span
+                className="inline-block w-4 h-4 rounded-full border-2 mr-2 align-middle"
+                style={{
+                  borderColor:
+                    efectivoMode === "full_cash" ? "#fff" : "#8B1E3F",
+                  background: "#fff",
+                }}
+              />
+              Pagar en efectivo en el estudio
+            </button>
+          </div>
+
+          {/* Deposit sub-flow */}
+          {efectivoMode === "deposit" && (
+            <div className="space-y-4">
+              <div className="rounded-lg border bg-white p-4">
+                <p className="text-sm font-bold uppercase text-textColor mb-1">
+                  Depósito anticipado
+                </p>
+                <p className="text-textColor text-sm">
+                  Deposita <span className="font-bold">${depositAmount}</span> (
+                  {cashDepositPercentage}%) via transferencia para reservar tu
+                  lugar. El resto{" "}
+                  <span className="font-bold">
+                    $
+                    {danceClass.price != null
+                      ? danceClass.price - depositAmount
+                      : "—"}
+                  </span>{" "}
+                  se paga en efectivo el día de la clase.
+                </p>
+              </div>
+
+              {/* Sub-method selector */}
+              <div className="grid grid-cols-3 gap-3">
+                {(["zelle", "binance", "bs"] as const).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => {
+                      setEfectivoSubMethod(m);
+                      setReference("");
+                      setTitular("");
+                      setPaymentEmail("");
+                      setCedula("");
+                    }}
+                    className={[
+                      "rounded-lg border p-3 text-center transition-colors text-sm",
+                      efectivoSubMethod === m
+                        ? "border-[#60152A] bg-[#60152A] text-white font-bold"
+                        : "bg-white text-primary hover:bg-gray-200 font-bold",
+                    ].join(" ")}
+                  >
+                    {m === "zelle"
+                      ? "Zelle"
+                      : m === "binance"
+                        ? "Binance"
+                        : "Bolívares"}
+                  </button>
+                ))}
+              </div>
+
+              {/* Show PaymentInfo for sub-method */}
+              {efectivoSubMethod && <PaymentInfo method={efectivoSubMethod} />}
+
+              {/* Sub-method fields */}
+              {efectivoSubMethod === "zelle" && (
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <Label htmlFor="ef-ref" className="text-white/80">
+                      Número de referencia
+                    </Label>
+                    <Input
+                      id="ef-ref"
+                      placeholder="REF-xxxxxxxxx"
+                      value={reference}
+                      onChange={(e) => setReference(e.target.value)}
+                      className="bg-white text-primary placeholder:text-gray-400 py-5"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="ef-titular" className="text-white/80">
+                      Titular
+                    </Label>
+                    <Input
+                      id="ef-titular"
+                      placeholder="Nombre del titular"
+                      value={titular}
+                      onChange={(e) => setTitular(e.target.value)}
+                      className="bg-white text-primary placeholder:text-gray-400 py-5"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="ef-pemail" className="text-white/80">
+                      Correo
+                    </Label>
+                    <Input
+                      id="ef-pemail"
+                      type="email"
+                      placeholder="titular@ejemplo.com"
+                      value={paymentEmail}
+                      onChange={(e) => setPaymentEmail(e.target.value)}
+                      className="bg-white text-primary placeholder:text-gray-400 py-5"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {efectivoSubMethod === "binance" && (
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <Label htmlFor="ef-ref" className="text-white/80">
+                      Número de referencia
+                    </Label>
+                    <Input
+                      id="ef-ref"
+                      placeholder="REF-xxxxxxxxx"
+                      value={reference}
+                      onChange={(e) => setReference(e.target.value)}
+                      className="bg-white text-primary placeholder:text-gray-400 py-5"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="ef-pemail" className="text-white/80">
+                      Correo
+                    </Label>
+                    <Input
+                      id="ef-pemail"
+                      type="email"
+                      placeholder="titular@ejemplo.com"
+                      value={paymentEmail}
+                      onChange={(e) => setPaymentEmail(e.target.value)}
+                      className="bg-white text-primary placeholder:text-gray-400 py-5"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {efectivoSubMethod === "bs" && (
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <Label htmlFor="ef-ref" className="text-white/80">
+                      Número de referencia
+                    </Label>
+                    <Input
+                      id="ef-ref"
+                      placeholder="REF-xxxxxxxxx"
+                      value={reference}
+                      onChange={(e) => setReference(e.target.value)}
+                      className="bg-white text-primary placeholder:text-gray-400 py-5"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="ef-cedula" className="text-white/80">
+                      Cédula
+                    </Label>
+                    <Input
+                      id="ef-cedula"
+                      placeholder="V-12345678"
+                      value={cedula}
+                      onChange={(e) => setCedula(e.target.value)}
+                      className="bg-white text-primary placeholder:text-gray-400 py-5"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="ef-titular" className="text-white/80">
+                      Titular
+                    </Label>
+                    <Input
+                      id="ef-titular"
+                      placeholder="Nombre del titular"
+                      value={titular}
+                      onChange={(e) => setTitular(e.target.value)}
+                      className="bg-white text-primary placeholder:text-gray-400 py-5"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Full cash info */}
+          {efectivoMode === "full_cash" && (
+            <div className="rounded-lg border bg-white p-4">
+              <p className="text-sm font-bold uppercase text-textColor mb-1">
+                Pago en persona
+              </p>
+              <p className="text-textColor text-sm">
+                Puedes pagar el monto completo en efectivo acercándote al
+                estudio al menos 3 días antes de la clase.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Method-specific fields (non-efectivo) */}
       {paymentMethod === "zelle" && (
         <div className="space-y-4">
           <div className="space-y-1">

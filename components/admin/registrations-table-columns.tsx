@@ -63,6 +63,20 @@ export const columns: ColumnDef<RegistrationWithClass>[] = [
     },
   },
   {
+    id: "fecha_clase",
+    header: "Fecha de Clase",
+    cell: ({ row }) => {
+      return new Date(row.original.classes.scheduled_date).toLocaleDateString();
+    },
+  },
+  {
+    id: "fecha_registro",
+    header: "Fecha de Registro",
+    cell: ({ row }) => {
+      return new Date(row.original.created_at).toLocaleDateString();
+    },
+  },
+  {
     accessorKey: "classes.price",
     header: "Costo",
     cell: ({ row }) => {

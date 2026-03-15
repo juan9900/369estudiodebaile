@@ -56,9 +56,7 @@ export function ClassForm({ initialData }: ClassFormProps) {
     video_url: initialData?.video_url ?? "",
     song_title: initialData?.song_title ?? "",
     song_artist: initialData?.song_artist ?? "",
-    song_spotify_url: initialData?.song_spotify_url ?? "",
     song_youtube_url: initialData?.song_youtube_url ?? "",
-    song_apple_music_url: initialData?.song_apple_music_url ?? "",
   });
 
   const [openingTime, setOpeningTime] = useState("08:00");
@@ -199,9 +197,7 @@ export function ClassForm({ initialData }: ClassFormProps) {
       video_url: form.video_url || null,
       song_title: form.song_title || null,
       song_artist: form.song_artist || null,
-      song_spotify_url: form.song_spotify_url || null,
       song_youtube_url: form.song_youtube_url || null,
-      song_apple_music_url: form.song_apple_music_url || null,
     };
 
     try {
@@ -245,13 +241,29 @@ export function ClassForm({ initialData }: ClassFormProps) {
 
   const getDayOfWeek = (dateStr: string): string => {
     const date = new Date(dateStr + "T00:00:00Z");
-    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const days = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
     return days[date.getUTCDay()];
   };
 
-  const currentDay = form.scheduled_date ? getDayOfWeek(form.scheduled_date) : "";
-  const isValidDayForNormalClass = currentDay === "Saturday" || currentDay === "Sunday";
-  const normalClassSlotsForDay = currentDay === "Saturday" ? normalClassSlots.Saturday : currentDay === "Sunday" ? normalClassSlots.Sunday : [];
+  const currentDay = form.scheduled_date
+    ? getDayOfWeek(form.scheduled_date)
+    : "";
+  const isValidDayForNormalClass =
+    currentDay === "Saturday" || currentDay === "Sunday";
+  const normalClassSlotsForDay =
+    currentDay === "Saturday"
+      ? normalClassSlots.Saturday
+      : currentDay === "Sunday"
+        ? normalClassSlots.Sunday
+        : [];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5 max-w-xl">
@@ -322,9 +334,13 @@ export function ClassForm({ initialData }: ClassFormProps) {
           onChange={handleDateChange}
           required
         />
-        {!form.is_masterclass && form.scheduled_date && !isValidDayForNormalClass && (
-          <p className="text-sm text-red-500">Las clases normales deben ser sábado o domingo</p>
-        )}
+        {!form.is_masterclass &&
+          form.scheduled_date &&
+          !isValidDayForNormalClass && (
+            <p className="text-sm text-red-500">
+              Las clases normales deben ser sábado o domingo
+            </p>
+          )}
       </div>
 
       {form.is_masterclass ? (
@@ -391,7 +407,9 @@ export function ClassForm({ initialData }: ClassFormProps) {
           <Select
             value={form.start_time}
             onValueChange={(val) => {
-              const slotData = normalClassSlotsForDay.find((s) => s.start === val);
+              const slotData = normalClassSlotsForDay.find(
+                (s) => s.start === val,
+              );
               if (slotData) {
                 setForm((prev) => ({
                   ...prev,
@@ -403,7 +421,13 @@ export function ClassForm({ initialData }: ClassFormProps) {
             disabled={!form.scheduled_date || !isValidDayForNormalClass}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder={isValidDayForNormalClass ? "Seleccionar horario" : "Selecciona un sábado o domingo"} />
+              <SelectValue
+                placeholder={
+                  isValidDayForNormalClass
+                    ? "Seleccionar horario"
+                    : "Selecciona un sábado o domingo"
+                }
+              />
             </SelectTrigger>
             <SelectContent>
               {normalClassSlotsForDay.map((slot) => (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Dialog,
@@ -54,8 +54,18 @@ export function RegistrationDetailDialog({
   );
   const [saving, setSaving] = useState(false);
 
+  // Sync moneyReturned from registration when dialog opens
+  useEffect(() => {
+    if (open) {
+      setMoneyReturned(registration?.money_returned ?? false);
+    }
+  }, [open, registration]);
+
   // Keep local status in sync when dialog opens with a new registration
   const currentStatus = selectedStatus ?? registration?.status ?? "pending";
+  const moneyReturnedChanged =
+    currentStatus === "cancelled" &&
+    moneyReturned !== (registration?.money_returned ?? false);
 
   const handleOpen = (isOpen: boolean) => {
     if (!isOpen) {
@@ -66,46 +76,43 @@ export function RegistrationDetailDialog({
   };
 
   const handleSave = async () => {
-    if (
-      !registration ||
-      !selectedStatus ||
-      selectedStatus === registration.status
-    )
-      return;
+    const statusChanged =
+      selectedStatus && selectedStatus !== registration?.status;
+    if (!registration || (!statusChanged && !moneyReturnedChanged)) return;
     setSaving(true);
     try {
       await onStatusChange(
         registration.id,
-        selectedStatus,
+        selectedStatus ?? registration.status,
         currentStatus === "cancelled" ? moneyReturned : undefined,
       );
-      const response = await fetch("/api/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-
-        body: JSON.stringify({
-          messages: [
-            {
-              template: "clientStatusChange",
-              toEmail: registration.contact_email,
-
-              payload: {
-                clientName: registration.contact_name,
-                clientLastName: registration.contact_lastname,
-                clientEmail: registration.contact_email,
-                className: registration.classes.title,
-                instructor: registration.classes.instructor,
-                day: registration.classes.scheduled_date,
-                hour: registration.classes.start_time,
-                price: registration.classes.price,
-                status: selectedStatus,
+      if (statusChanged) {
+        await fetch("/api/send", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messages: [
+              {
+                template: "clientStatusChange",
+                toEmail: registration.contact_email,
+                payload: {
+                  clientName: registration.contact_name,
+                  clientLastName: registration.contact_lastname,
+                  clientEmail: registration.contact_email,
+                  className: registration.classes.title,
+                  instructor: registration.classes.instructor,
+                  day: registration.classes.scheduled_date,
+                  hour: registration.classes.start_time,
+                  price: registration.classes.price,
+                  status: selectedStatus,
+                },
               },
-            },
-          ],
-        }),
-      });
+            ],
+          }),
+        });
+      }
     } catch (error) {
       console.log(error);
     } finally {
@@ -240,8 +247,8 @@ export function RegistrationDetailDialog({
             onClick={handleSave}
             disabled={
               saving ||
-              !selectedStatus ||
-              selectedStatus === registration.status
+              (!moneyReturnedChanged &&
+                (!selectedStatus || selectedStatus === registration.status))
             }
             className="text-white"
           >
