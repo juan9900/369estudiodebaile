@@ -50,9 +50,10 @@ export function ClassForm({ initialData }: ClassFormProps) {
     genre: initialData?.genre ?? "",
     level: initialData?.level ?? 1,
     is_active: initialData?.is_active ?? true,
-    is_masterclass: initialData?.is_masterclass ?? false,
+    class_type: initialData?.class_type ?? ("individual" as "individual" | "masterclass" | "proyecto"),
     image_url: initialData?.image_url ?? "",
     instructor_photo_url: initialData?.instructor_photo_url ?? "",
+    instructor_instagram_url: initialData?.instructor_instagram_url ?? "",
     video_url: initialData?.video_url ?? "",
     song_title: initialData?.song_title ?? "",
     song_artist: initialData?.song_artist ?? "",
@@ -107,10 +108,12 @@ export function ClassForm({ initialData }: ClassFormProps) {
   const allSlots = generateTimeSlots(openingTime, closingTime);
   const occupiedSlots = getOccupiedSlots(existingClasses, allSlots);
 
+  const isFreeSchedule = form.class_type === "masterclass" || form.class_type === "proyecto";
+
   // For normal classes, a start slot is only valid if the full 1-hour block is free
   const startTimeSlots = allSlots.filter((slot) => {
     if (occupiedSlots.has(slot)) return false;
-    if (!form.is_masterclass) {
+    if (!isFreeSchedule) {
       const endSlot = addMinutes(slot, 60);
       // end slot must not exceed closing time
       if (endSlot > closingTime) return false;
@@ -191,9 +194,10 @@ export function ClassForm({ initialData }: ClassFormProps) {
       genre: form.genre,
       level: form.level ? Number(form.level) : 1,
       is_active: form.is_active,
-      is_masterclass: form.is_masterclass,
+      class_type: form.class_type,
       image_url: form.image_url || null,
       instructor_photo_url: form.instructor_photo_url || null,
+      instructor_instagram_url: form.instructor_instagram_url || null,
       video_url: form.video_url || null,
       song_title: form.song_title || null,
       song_artist: form.song_artist || null,
@@ -267,25 +271,35 @@ export function ClassForm({ initialData }: ClassFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5 max-w-xl">
-      <div className="flex items-center gap-2 p-4 bg-muted rounded-lg">
-        <input
-          type="checkbox"
-          id="is_masterclass"
-          name="is_masterclass"
-          checked={form.is_masterclass}
-          onChange={(e) => {
-            setForm((prev) => ({
-              ...prev,
-              is_masterclass: e.target.checked,
-              start_time: "",
-              end_time: "",
-            }));
-          }}
-          className="rounded"
-        />
-        <Label htmlFor="is_masterclass" className="font-semibold">
-          Masterclass
-        </Label>
+      <div className="p-4 bg-muted rounded-lg space-y-2">
+        <Label className="font-semibold">Tipo de clase</Label>
+        <div className="flex gap-6">
+          {(
+            [
+              { value: "individual", label: "Clase individual" },
+              { value: "masterclass", label: "Masterclass" },
+              { value: "proyecto", label: "Proyecto" },
+            ] as const
+          ).map(({ value, label }) => (
+            <label key={value} className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="class_type"
+                value={value}
+                checked={form.class_type === value}
+                onChange={() =>
+                  setForm((prev) => ({
+                    ...prev,
+                    class_type: value,
+                    start_time: "",
+                    end_time: "",
+                  }))
+                }
+              />
+              {label}
+            </label>
+          ))}
+        </div>
       </div>
 
       <div className="grid gap-2">
@@ -323,8 +337,20 @@ export function ClassForm({ initialData }: ClassFormProps) {
       </div>
 
       <div className="grid gap-2">
+        <Label htmlFor="instructor_instagram_url">Instagram del instructor</Label>
+        <Input
+          id="instructor_instagram_url"
+          name="instructor_instagram_url"
+          type="url"
+          value={form.instructor_instagram_url}
+          onChange={handleChange}
+          placeholder="https://www.instagram.com/..."
+        />
+      </div>
+
+      <div className="grid gap-2">
         <Label htmlFor="scheduled_date">
-          {form.is_masterclass ? "Fecha" : "Fecha (Sábado o Domingo)"}
+          {form.class_type === "individual" ? "Fecha (Sábado o Domingo)" : "Fecha"}
         </Label>
         <Input
           id="scheduled_date"
@@ -334,7 +360,7 @@ export function ClassForm({ initialData }: ClassFormProps) {
           onChange={handleDateChange}
           required
         />
-        {!form.is_masterclass &&
+        {!isFreeSchedule &&
           form.scheduled_date &&
           !isValidDayForNormalClass && (
             <p className="text-sm text-red-500">
@@ -343,7 +369,7 @@ export function ClassForm({ initialData }: ClassFormProps) {
           )}
       </div>
 
-      {form.is_masterclass ? (
+      {isFreeSchedule ? (
         <div className="grid grid-cols-2 gap-4">
           <div className="grid gap-2">
             <Label htmlFor="start_time">Hora inicio</Label>

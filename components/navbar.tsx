@@ -45,7 +45,7 @@ export const Navbar = () => {
     <nav className="w-full bg-white border-b border-gray-200">
       <div className="container mx-auto flex justify-between items-center py-4 px-6">
         <Link href="/" className="text-2xl font-bold text-[#1a1a1a]">
-          ESTUDIO 369
+          369 ESTUDIO
         </Link>
 
         {/* Desktop Navigation */}
