@@ -23,6 +23,7 @@ interface CheckoutFormProps {
   step: 1 | 2 | 3;
   setStep: React.Dispatch<React.SetStateAction<1 | 2 | 3>>;
   cashDepositPercentage: number;
+  euroRate: number | null;
 }
 
 export function CheckoutForm({
@@ -30,6 +31,7 @@ export function CheckoutForm({
   step,
   setStep,
   cashDepositPercentage,
+  euroRate,
 }: CheckoutFormProps) {
   // Contact fields
   const [name, setName] = useState("");
@@ -398,7 +400,11 @@ export function CheckoutForm({
 
       {/* Payment details / efectivo sub-flow */}
       {paymentMethod && paymentMethod !== "efectivo" && (
-        <PaymentInfo method={paymentMethod} />
+        <PaymentInfo
+          method={paymentMethod}
+          euroRate={euroRate}
+          price={danceClass.price}
+        />
       )}
 
       {paymentMethod === "efectivo" && (
@@ -480,7 +486,9 @@ export function CheckoutForm({
                   se paga en efectivo el día de la clase.
                 </p>
               </div>
-
+              <p className="text-white/50 text-sm">
+                Elige tu método de pago preferido:
+              </p>
               {/* Sub-method selector */}
               <div className="grid grid-cols-3 gap-3">
                 {(["zelle", "binance", "bs"] as const).map((m) => (
@@ -511,7 +519,13 @@ export function CheckoutForm({
               </div>
 
               {/* Show PaymentInfo for sub-method */}
-              {efectivoSubMethod && <PaymentInfo method={efectivoSubMethod} />}
+              {efectivoSubMethod && (
+                <PaymentInfo
+                  method={efectivoSubMethod}
+                  euroRate={euroRate}
+                  price={depositAmount}
+                />
+              )}
 
               {/* Sub-method fields */}
               {efectivoSubMethod === "zelle" && (

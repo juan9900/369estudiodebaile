@@ -8,9 +8,11 @@ import { formatDate } from "../classes-carousel";
 export default function CheckOutContainer({
   danceClass,
   cashDepositPercentage,
+  euroRate,
 }: {
   danceClass: DanceClass;
   cashDepositPercentage: number;
+  euroRate: number | null;
 }) {
   // Step state
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -39,7 +41,7 @@ export default function CheckOutContainer({
       )}
 
       {/* Multi-step form */}
-      <CheckoutForm step={step} setStep={setStep} danceClass={danceClass} cashDepositPercentage={cashDepositPercentage} />
+      <CheckoutForm step={step} setStep={setStep} danceClass={danceClass} cashDepositPercentage={cashDepositPercentage} euroRate={euroRate} />
     </>
   );
 }
