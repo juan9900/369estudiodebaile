@@ -46,7 +46,7 @@ export function Sidebar() {
     <aside className="w-64 min-h-screen bg-primary text-white flex flex-col">
       <div className="p-6 border-b border-white/20">
         <Link href="/" className="text-xl font-black tracking-wide">
-          ESTUDIO 369
+          369 ESTUDIO
         </Link>
       </div>
 

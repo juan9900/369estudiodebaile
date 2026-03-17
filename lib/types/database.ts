@@ -24,7 +24,6 @@ export interface DanceClass {
   genre: number;
   level: number;
   is_active: boolean;
-  is_masterclass: boolean;
   cancelled_at: string | null;
   created_by: string | null;
   created_at: string;
@@ -38,6 +37,8 @@ export interface DanceClass {
   song_title: string | null;
   song_artist: string | null;
   song_youtube_url: string | null;
+  class_type: 'individual' | 'masterclass' | 'proyecto';
+  instructor_instagram_url: string | null;
 }
 
 export type RegistrationStatus = "pending" | "confirmed" | "cancelled";

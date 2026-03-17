@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import { DanceClass } from "@/lib/types/database";
 import { CheckoutForm } from "./checkout-form";
-import { formatDate } from "../classes-section";
+import { formatDate } from "../classes-carousel";
 
 export default function CheckOutContainer({
   danceClass,
