@@ -36,6 +36,19 @@ export default async function CheckoutPage({
   const spotsLeft = danceClass.max_capacity - danceClass.current_enrollment;
   const cashDepositPercentage = settingsData?.cash_deposit_percentage ?? 10;
 
+  let euroRate: number | null = null;
+  try {
+    const rateRes = await fetch("https://ve.dolarapi.com/v1/euros/oficial", {
+      next: { revalidate: 3600 },
+    });
+    if (rateRes.ok) {
+      const rateData = await rateRes.json();
+      euroRate = rateData?.promedio ?? null;
+    }
+  } catch {
+    // API unavailable — euroRate stays null
+  }
+
   if (spotsLeft <= 0) {
     return (
       <div className="min-h-screen bg-primary flex items-center justify-center px-6">
@@ -60,7 +73,7 @@ export default async function CheckoutPage({
   return (
     <div className="min-h-screen bg-primary flex items-center justify-center px-6">
       <div className="max-w-xl w-full">
-        <CheckOutContainer danceClass={danceClass} cashDepositPercentage={cashDepositPercentage} />
+        <CheckOutContainer danceClass={danceClass} cashDepositPercentage={cashDepositPercentage} euroRate={euroRate} />
       </div>
     </div>
   );

@@ -27,11 +27,21 @@ const PAYMENT_DETAILS: Record<
 
 interface PaymentInfoProps {
   method: PaymentMethod;
+  euroRate?: number | null;
+  price?: number | null;
 }
 
-export function PaymentInfo({ method }: PaymentInfoProps) {
+export function PaymentInfo({ method, euroRate, price }: PaymentInfoProps) {
   const detail = PAYMENT_DETAILS[method];
   if (!detail) return null;
+
+  const bsPrice =
+    method === "bs" && euroRate != null && price != null
+      ? (price * euroRate).toLocaleString("es-VE", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })
+      : null;
 
   return (
     <div className="rounded-lg border bg-white p-4">
@@ -43,6 +53,12 @@ export function PaymentInfo({ method }: PaymentInfoProps) {
       {detail.accountHolder && (
         <p className="text-textColor text-sm">
           Titular: {detail.accountHolder}
+        </p>
+      )}
+
+      {bsPrice && (
+        <p className="text-textColor text-md font-black mt-2">
+          Total a pagar: Bs. {bsPrice}
         </p>
       )}
     </div>
