@@ -474,11 +474,18 @@ export function ClassForm({ initialData }: ClassFormProps) {
               />
             </SelectTrigger>
             <SelectContent>
-              {normalClassSlotsForDay.map((slot) => (
-                <SelectItem key={slot.start} value={slot.start}>
-                  {formatTimeAMPM(slot.start)} – {formatTimeAMPM(slot.end)}
-                </SelectItem>
-              ))}
+              {normalClassSlotsForDay.map((slot) => {
+                const isOccupied = existingClasses.some((cls) => {
+                  const clsStart = cls.start_time.slice(0, 5);
+                  const clsEnd = cls.end_time.slice(0, 5);
+                  return slot.start < clsEnd && slot.end > clsStart;
+                });
+                return (
+                  <SelectItem key={slot.start} value={slot.start} disabled={isOccupied}>
+                    {formatTimeAMPM(slot.start)} – {formatTimeAMPM(slot.end)}{isOccupied ? " (ocupado)" : ""}
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
         </div>

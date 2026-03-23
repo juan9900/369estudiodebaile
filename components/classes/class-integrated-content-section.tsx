@@ -111,7 +111,7 @@ export function ClassIntegratedContentSection({
             <div className="flex flex-col items-center lg:flex-row gap-6 lg:items-center mb-6 ">
               {/* Photo with animated border */}
               <div className="flex flex-col items-center  w-44 gap-3 flex-shrink-0 ">
-                <div className=" inset-0 rounded-2xl bg-gradient-to-br from-primary via-[#DC143C] to-primary p-1">
+                <div className="w-44 h-44 rounded-2xl bg-gradient-to-br from-primary via-[#DC143C] to-primary p-1">
                   <div className="w-full h-full rounded-2xl bg-white p-1">
                     <img
                       src={photo}

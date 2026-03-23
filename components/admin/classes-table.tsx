@@ -34,7 +34,9 @@ export function ClassesTable({ mode }: ClassesTableProps) {
     pageIndex: 0,
     pageSize: PAGE_SIZE,
   });
-  const [deleteDialog, setDeleteDialog] = useState<DeleteDialogInfo | null>(null);
+  const [deleteDialog, setDeleteDialog] = useState<DeleteDialogInfo | null>(
+    null,
+  );
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -96,37 +98,53 @@ export function ClassesTable({ mode }: ClassesTableProps) {
     fetchData();
   }, [fetchData]);
 
-  const openDeleteDialog = useCallback(async (id: string) => {
-    const supabase = createClient();
-    const cls = classes.find((c) => c.id === id);
-    if (!cls) return;
+  const openDeleteDialog = useCallback(
+    async (id: string) => {
+      const supabase = createClient();
+      const cls = classes.find((c) => c.id === id);
+      if (!cls) return;
 
-    const { data } = await supabase
-      .from("registrations")
-      .select("status")
-      .eq("class_id", id);
+      const { data } = await supabase
+        .from("registrations")
+        .select("status")
+        .eq("class_id", id);
 
-    const all = data ?? [];
-    const activeCount = all.filter(
-      (r) => r.status === "pending" || r.status === "confirmed",
-    ).length;
+      const all = data ?? [];
+      const activeCount = all.filter(
+        (r) => r.status === "pending" || r.status === "confirmed",
+      ).length;
 
-    let state: DeleteDialogState;
-    if (all.length === 0) {
-      state = "no-registrations";
-    } else if (activeCount > 0) {
-      state = "has-active";
-    } else {
-      state = "all-cancelled";
-    }
+      let state: DeleteDialogState;
+      if (all.length === 0) {
+        state = "no-registrations";
+      } else if (activeCount > 0) {
+        state = "has-active";
+      } else {
+        state = "all-cancelled";
+      }
 
-    setDeleteDialog({ classId: id, className: cls.title, state, activeCount });
-  }, [classes]);
+      setDeleteDialog({
+        classId: id,
+        className: cls.title,
+        state,
+        activeCount,
+      });
+    },
+    [classes],
+  );
 
   const handleHardDelete = useCallback(async () => {
     if (!deleteDialog) return;
     const supabase = createClient();
-    await supabase.from("classes").delete().eq("id", deleteDialog.classId);
+    const { error: deleteError } = await supabase
+      .from("classes")
+      .delete()
+      .eq("id", deleteDialog.classId);
+    if (deleteError) {
+      console.log(deleteError);
+      return;
+    }
+    console.log(`deleted: ${deleteDialog.classId}`);
     setClasses((prev) => prev.filter((c) => c.id !== deleteDialog.classId));
     setTotalCount((prev) => prev - 1);
     setDeleteDialog(null);
@@ -135,10 +153,14 @@ export function ClassesTable({ mode }: ClassesTableProps) {
   const handleSoftDelete = useCallback(async () => {
     if (!deleteDialog) return;
     const supabase = createClient();
-    await supabase
+    const { error } = await supabase
       .from("classes")
       .update({ is_active: false, cancelled_at: new Date().toISOString() })
       .eq("id", deleteDialog.classId);
+    if (error) {
+      console.log(error);
+      return;
+    }
     setClasses((prev) => prev.filter((c) => c.id !== deleteDialog.classId));
     setTotalCount((prev) => prev - 1);
     setDeleteDialog(null);

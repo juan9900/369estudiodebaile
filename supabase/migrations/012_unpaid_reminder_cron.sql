@@ -11,7 +11,7 @@ SELECT cron.schedule(
   SELECT net.http_get(
     url := 'https://369estudio.com/api/cron/unpaid-reminders',
     headers := jsonb_build_object(
-      'Authorization', 'Bearer 70L3dsdfa1xCkby3Cgvfasdf324fsdeokHfIv'
+      'Authorization', ''
     )
   );
   $$
