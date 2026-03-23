@@ -15,12 +15,16 @@ export async function GET(req: NextRequest) {
 
   const supabase = createAdminClient();
 
-  // Compute target date = today + 3 days in America/Caracas timezone
-  const now = new Date(
-    new Date().toLocaleString("en-US", { timeZone: "America/Caracas" }),
-  );
-  now.setDate(now.getDate() + 3);
-  const targetDate = now.toISOString().split("T")[0]; // YYYY-MM-DD
+  // Compute target dates: tomorrow, +2 days, +3 days in America/Caracas timezone
+  const getCaracasDate = (daysOffset: number) => {
+    const d = new Date(
+      new Date().toLocaleString("en-US", { timeZone: "America/Caracas" }),
+    );
+    d.setDate(d.getDate() + daysOffset);
+    return d.toISOString().split("T")[0]; // YYYY-MM-DD
+  };
+
+  const targetDates = [1, 2, 3].map(getCaracasDate);
 
   const { data: registrations, error } = await supabase
     .from("registrations")
@@ -45,7 +49,7 @@ export async function GET(req: NextRequest) {
     )
     .eq("status", "pending")
     .eq("classes.is_active", true)
-    .eq("classes.scheduled_date", targetDate);
+    .in("classes.scheduled_date", targetDates);
 
   if (error) {
     console.error("Error fetching unpaid registrations:", error);
