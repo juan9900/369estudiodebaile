@@ -60,6 +60,9 @@ export function CheckoutForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const isClassDay =
+    danceClass.scheduled_date === new Date().toISOString().slice(0, 10);
+
   const depositAmount =
     danceClass.price != null
       ? Math.ceil((danceClass.price * cashDepositPercentage) / 100)
@@ -88,12 +91,6 @@ export function CheckoutForm({
         );
       if (efectivoSubMethod === "binance")
         return reference.trim().length > 0 && paymentEmail.trim().includes("@");
-      if (efectivoSubMethod === "bs")
-        return (
-          reference.trim().length > 0 &&
-          cedula.trim().length > 0 &&
-          titular.trim().length > 0
-        );
       return false;
     }
     if (paymentMethod === "zelle")
@@ -347,13 +344,23 @@ export function CheckoutForm({
           </div>
         </div>
 
-        <Button
-          onClick={() => setStep(2)}
-          disabled={!contactValid}
-          className="w-full bg-white text-primary hover:bg-gray-100 font-black disabled:opacity-50 py-5"
-        >
-          Continuar →
-        </Button>
+        <div className="flex gap-3">
+          <Link href={`/clases/${danceClass.id}`} className="flex-1">
+            <Button
+              variant="outline"
+              className="w-full border-white/30 text-primary hover:text-primary font-black hover:bg-gray-200"
+            >
+              ← Volver
+            </Button>
+          </Link>
+          <Button
+            onClick={() => setStep(2)}
+            disabled={!contactValid}
+            className="flex-1 bg-white text-primary hover:bg-gray-100 font-black disabled:opacity-50 py-5"
+          >
+            Continuar →
+          </Button>
+        </div>
       </div>
     );
   }
@@ -368,34 +375,48 @@ export function CheckoutForm({
 
       {/* Payment method radio buttons */}
       <div className="grid grid-cols-2 gap-3">
-        {PAYMENT_OPTIONS.map((opt) => (
-          <button
-            key={opt.value}
-            type="button"
-            onClick={() => {
-              setPaymentMethod(opt.value);
-              if (opt.value !== "efectivo") {
-                setEfectivoMode(null);
-                setEfectivoSubMethod(null);
+        {PAYMENT_OPTIONS.map((opt) => {
+          const isBsDisabled = opt.value === "bs" && !isClassDay;
+          return (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={
+                isBsDisabled
+                  ? undefined
+                  : () => {
+                      setPaymentMethod(opt.value);
+                      if (opt.value !== "efectivo") {
+                        setEfectivoMode(null);
+                        setEfectivoSubMethod(null);
+                      }
+                    }
               }
-            }}
-            className={[
-              "rounded-lg border p-3 text-left transition-colors",
-              paymentMethod === opt.value
-                ? "border-[#60152A] bg-[#60152A] text-white font-bold"
-                : " bg-white text-primary hover:bg-gray-200 font-bold",
-            ].join(" ")}
-          >
-            <span
-              className="inline-block w-4 h-4 rounded-full border-2 mr-2 align-middle"
-              style={{
-                borderColor: paymentMethod === opt.value ? "#fff" : "#8B1E3F",
-                background: "#fff",
-              }}
-            />
-            {opt.label}
-          </button>
-        ))}
+              className={[
+                "rounded-lg border p-3 text-left transition-colors",
+                isBsDisabled
+                  ? "bg-white text-primary/40 font-bold opacity-50 cursor-not-allowed"
+                  : paymentMethod === opt.value
+                    ? "border-primary-dark bg-primary-dark text-white font-bold"
+                    : "bg-white text-primary hover:bg-gray-200 font-bold",
+              ].join(" ")}
+            >
+              <span
+                className="inline-block w-4 h-4 rounded-full border-2 mr-2 align-middle"
+                style={{
+                  borderColor: paymentMethod === opt.value ? "#fff" : "#6c1717",
+                  background: "#fff",
+                }}
+              />
+              {opt.label}
+              {isBsDisabled && (
+                <span className="block text-xs font-normal mt-1 leading-tight">
+                  Disponible solo el día de la clase
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Payment details / efectivo sub-flow */}
@@ -424,14 +445,14 @@ export function CheckoutForm({
               className={[
                 "rounded-lg border p-3 text-left transition-colors",
                 efectivoMode === "deposit"
-                  ? "border-[#60152A] bg-[#60152A] text-white font-bold"
+                  ? "border-primary-dark bg-primary-dark text-white font-bold"
                   : "bg-white text-primary hover:bg-gray-200 font-bold",
               ].join(" ")}
             >
               <span
                 className="inline-block w-4 h-4 rounded-full border-2 mr-2 align-middle"
                 style={{
-                  borderColor: efectivoMode === "deposit" ? "#fff" : "#8B1E3F",
+                  borderColor: efectivoMode === "deposit" ? "#fff" : "#6c1717",
                   background: "#fff",
                 }}
               />
@@ -450,7 +471,7 @@ export function CheckoutForm({
               className={[
                 "rounded-lg border p-3 text-left transition-colors",
                 efectivoMode === "full_cash"
-                  ? "border-[#60152A] bg-[#60152A] text-white font-bold"
+                  ? "border-primary-dark bg-primary-dark text-white font-bold"
                   : "bg-white text-primary hover:bg-gray-200 font-bold",
               ].join(" ")}
             >
@@ -458,7 +479,7 @@ export function CheckoutForm({
                 className="inline-block w-4 h-4 rounded-full border-2 mr-2 align-middle"
                 style={{
                   borderColor:
-                    efectivoMode === "full_cash" ? "#fff" : "#8B1E3F",
+                    efectivoMode === "full_cash" ? "#fff" : "#6c1717",
                   background: "#fff",
                 }}
               />
@@ -490,8 +511,8 @@ export function CheckoutForm({
                 Elige tu método de pago preferido:
               </p>
               {/* Sub-method selector */}
-              <div className="grid grid-cols-3 gap-3">
-                {(["zelle", "binance", "bs"] as const).map((m) => (
+              <div className="grid grid-cols-2 gap-3">
+                {(["zelle", "binance"] as const).map((m) => (
                   <button
                     key={m}
                     type="button"
@@ -505,15 +526,11 @@ export function CheckoutForm({
                     className={[
                       "rounded-lg border p-3 text-center transition-colors text-sm",
                       efectivoSubMethod === m
-                        ? "border-[#60152A] bg-[#60152A] text-white font-bold"
+                        ? "border-primary-dark bg-primary-dark text-white font-bold"
                         : "bg-white text-primary hover:bg-gray-200 font-bold",
                     ].join(" ")}
                   >
-                    {m === "zelle"
-                      ? "Zelle"
-                      : m === "binance"
-                        ? "Binance"
-                        : "Bolívares"}
+                    {m === "zelle" ? "Zelle" : "Binance"}
                   </button>
                 ))}
               </div>
@@ -594,47 +611,6 @@ export function CheckoutForm({
                       placeholder="titular@ejemplo.com"
                       value={paymentEmail}
                       onChange={(e) => setPaymentEmail(e.target.value)}
-                      className="bg-white text-primary placeholder:text-gray-400 py-5"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {efectivoSubMethod === "bs" && (
-                <div className="space-y-4">
-                  <div className="space-y-1">
-                    <Label htmlFor="ef-ref" className="text-white/80">
-                      Número de referencia
-                    </Label>
-                    <Input
-                      id="ef-ref"
-                      placeholder="REF-xxxxxxxxx"
-                      value={reference}
-                      onChange={(e) => setReference(e.target.value)}
-                      className="bg-white text-primary placeholder:text-gray-400 py-5"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="ef-cedula" className="text-white/80">
-                      Cédula
-                    </Label>
-                    <Input
-                      id="ef-cedula"
-                      placeholder="V-12345678"
-                      value={cedula}
-                      onChange={(e) => setCedula(e.target.value)}
-                      className="bg-white text-primary placeholder:text-gray-400 py-5"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="ef-titular" className="text-white/80">
-                      Titular
-                    </Label>
-                    <Input
-                      id="ef-titular"
-                      placeholder="Nombre del titular"
-                      value={titular}
-                      onChange={(e) => setTitular(e.target.value)}
                       className="bg-white text-primary placeholder:text-gray-400 py-5"
                     />
                   </div>

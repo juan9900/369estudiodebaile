@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+
 export function AboutSection() {
   return (
     <section id="sobre-nosotros" className="py-20 px-6 bg-white">
@@ -20,6 +23,13 @@ export function AboutSection() {
               intensivas cada sábado para todos los niveles. Ya seas
               principiante o bailarín experimentado, aquí encontrarás tu lugar.
             </p>
+            <Link
+              href="/nosotros"
+              className="inline-flex items-center gap-2 bg-primary text-white font-bold px-8 py-3 rounded-lg hover:bg-primary-dark transition-colors mt-6"
+            >
+              CONOCER MÁS
+              <ArrowRight className="w-5 h-5" />
+            </Link>
           </div>
           <div className="relative h-[500px] w-full ">
             <div className="absolute top-0 left-0 w-[70%] h-[300px] rounded-lg overflow-hidden bg-gradient-to-br from-primary to-[#6d1730] flex items-center justify-center border-8 border-white shadow-2xl z-10">

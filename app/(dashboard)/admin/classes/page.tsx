@@ -30,7 +30,7 @@ export default function AdminClassesPage() {
             </Button>
           </Link>
           <Link href="/admin/classes/new">
-            <Button className="bg-primary hover:bg-[#6d1730] text-white">
+            <Button className="bg-primary hover:bg-primary-dark text-white">
               <Plus size={16} className="mr-2" />
               Nueva clase
             </Button>

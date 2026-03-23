@@ -43,7 +43,7 @@ export async function POST(req: Request) {
       }
 
       const { data, error } = await resend.emails.send({
-        from: "estudio369@lauretta.dev",
+        from: "info@369estudio.com",
         to: toEmail ?? "juanluislauretta@gmail.com",
         subject: config.subject,
         react: config.component(payload),

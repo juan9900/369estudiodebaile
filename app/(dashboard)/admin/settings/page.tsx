@@ -83,7 +83,9 @@ export default function AdminSettingsPage() {
   return (
     <div className="space-y-6 max-w-md">
       <div>
-        <h1 className="text-2xl font-black text-[#1a1a1a]">Ajustes del Estudio</h1>
+        <h1 className="text-2xl font-black text-[#1a1a1a]">
+          Ajustes del Estudio
+        </h1>
         <p className="text-gray-500 text-sm mt-1">
           Configura el horario de operación del estudio.
         </p>
@@ -130,7 +132,7 @@ export default function AdminSettingsPage() {
             value={cashDepositPercentage}
             onChange={(e) =>
               setCashDepositPercentage(
-                Math.min(100, Math.max(0, Number(e.target.value)))
+                Math.min(100, Math.max(0, Number(e.target.value))),
               )
             }
             className="w-full"
@@ -145,13 +147,15 @@ export default function AdminSettingsPage() {
 
       {error && <p className="text-sm text-red-500">{error}</p>}
       {success && (
-        <p className="text-sm text-green-600">Ajustes guardados correctamente.</p>
+        <p className="text-sm text-green-600">
+          Ajustes guardados correctamente.
+        </p>
       )}
 
       <Button
         onClick={handleSave}
         disabled={saving}
-        className="bg-primary hover:bg-[#6d1730] text-white"
+        className="bg-primary hover:bg-primary-dark text-white"
       >
         {saving ? "Guardando..." : "Guardar ajustes"}
       </Button>

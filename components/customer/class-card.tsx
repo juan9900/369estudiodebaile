@@ -91,7 +91,7 @@ export function ClassCard({
           ) : (
             <Button
               size="sm"
-              className="bg-primary hover:bg-[#6d1730]"
+              className="bg-primary hover:bg-primary-dark"
               disabled={loading || isFull}
               onClick={handleRegister}
             >

@@ -37,7 +37,7 @@ export function Hero() {
           <div className="flex flex-col md:flex-row gap-4">
             <a
               href="#clases"
-              className="bg-primary text-white font-bold px-8 py-3 rounded-lg hover:bg-[#6d1730] transition-colors text-center"
+              className="bg-primary text-white font-bold px-8 py-3 rounded-lg hover:bg-primary-dark transition-colors text-center"
             >
               VER HORARIOS
             </a>

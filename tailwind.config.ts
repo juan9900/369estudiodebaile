@@ -55,9 +55,9 @@ export default {
           foreground: "hsl(var(--popover-foreground))",
         },
         primary: {
-          DEFAULT: " #8B1E3F",
-          dark: " #6b1730",
-          darker: " #571327",
+          DEFAULT: " #8b1e2d",
+          dark: " #6c1717",
+          darker: " #691621",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",

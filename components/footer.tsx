@@ -8,6 +8,13 @@ export const Footer = () => {
             <p className="text-white/80 text-sm">
               © 2026 Estudio de Baile 369. Todos los derechos reservados.
             </p>
+            <p className="text-white/80 text-sm mt-1">Calle Ejemplo 123, Ciudad, País</p>
+            <a
+              href="mailto:info@369estudio.com"
+              className="text-white/80 text-sm hover:text-white transition-colors"
+            >
+              info@369estudio.com
+            </a>
           </div>
 
           <div className="flex gap-6">

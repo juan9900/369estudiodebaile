@@ -138,7 +138,7 @@ export function ContactSection() {
               </label>
             </div>
 
-            <Button className="w-full bg-primary hover:bg-[#6d1730] text-white font-bold py-5 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-shadow">
+            <Button className="w-full bg-primary hover:bg-primary-dark text-white font-bold py-5 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-shadow">
               ENVIAR MENSAJE
               <svg
                 width="20"
