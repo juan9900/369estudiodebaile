@@ -62,7 +62,7 @@ export function ClassCtaSection({ danceClass }: ClassCtaSectionProps) {
       className="py-20 lg:px-6 bg-gradient-to-b from-white to-[#F5F5F0]"
     >
       <div className="container mx-auto max-w-4xl">
-        <Card className="shadow-2xl border-2 border-gray-100 w-full">
+        <Card className="shadow-xl border bg-gray-50 w-full">
           <CardContent className="p-10">
             {/* Urgency badge */}
             {!isFull && spotsLeft <= 5 && (
@@ -80,20 +80,20 @@ export function ClassCtaSection({ danceClass }: ClassCtaSectionProps) {
             </h2>
 
             {/* Schedule grid with icons */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+              <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-100 shadow-sm justify-center">
                 <Calendar className="w-6 h-6 text-primary flex-shrink-0" />
                 <div className="min-w-0">
                   <p className="text-xs text-gray-500 font-bold uppercase">
                     Día
                   </p>
-                  <p className="text-gray-900 font-black capitalize truncate">
-                    {dayName}
+                  <p className="text-gray-900 font-black  truncate">
+                    {dayName}, {dayNum} de {monthName}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+              <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-100 shadow-sm justify-center">
                 <Clock className="w-6 h-6 text-primary flex-shrink-0" />
                 <div className="min-w-0">
                   <p className="text-xs text-gray-500 font-bold uppercase">
@@ -102,18 +102,6 @@ export function ClassCtaSection({ danceClass }: ClassCtaSectionProps) {
                   <p className="text-gray-900 font-black truncate">
                     {danceClass.start_time.slice(0, 5)} -{" "}
                     {danceClass.end_time.slice(0, 5)}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                <MapPin className="w-6 h-6 text-primary flex-shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-xs text-gray-500 font-bold uppercase">
-                    Fecha
-                  </p>
-                  <p className="text-gray-900 font-black truncate">
-                    {dayNum} de {monthName}
                   </p>
                 </div>
               </div>
@@ -142,14 +130,14 @@ export function ClassCtaSection({ danceClass }: ClassCtaSectionProps) {
 
             {/* Primary CTA */}
             <Button
-              onClick={() => router.push(`/clases/${danceClass.id}/checkout`)}
+              onClick={() =>
+                router.push(`/modalidades/${danceClass.id}/checkout`)
+              }
               disabled={isFull}
-              className="w-full h-10 lg:h-16 text-md lg:text-xl font-black bg-primary hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed group mb-4 text-white"
+              className="w-full h-10 lg:h-16 text-md lg:text-xl font-black bg-primary hover:bg-primary-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed group mb-4 text-white"
             >
               {isFull ? "CLASE LLENA" : "RESERVAR MI LUGAR"}
-              {!isFull && (
-                <ArrowRight className="ml-2 transition-transform group-hover:translate-x-1" />
-              )}
+              {!isFull && <ArrowRight className="ml-2 transition-transform " />}
             </Button>
 
             {/* Secondary actions */}

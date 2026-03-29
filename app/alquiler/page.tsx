@@ -8,6 +8,12 @@ import {
   RectangleVertical,
   Shirt,
   TreePine,
+  MapPin,
+  Clock,
+  Armchair,
+  AlertCircle,
+  UtensilsCrossed,
+  Droplets,
 } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
@@ -15,45 +21,52 @@ import { Footer } from "@/components/footer";
 const FEATURES = [
   {
     icon: Maximize2,
-    value: "80m²",
+    value: "ESPACIO",
     label: "Área total",
-    description: "Amplio espacio para cualquier actividad",
+    description:
+      "Amplio espacio de 7.40m x 4.27m (34m²) para cualquier actividad",
   },
   {
     icon: RectangleVertical,
-    value: "360°",
-    label: "Espejos de pared",
-    description: "Cobertura completa en todas las paredes",
+    value: "VISIÓN",
+    label: "Frente de espejo",
+    description:
+      "Amplia cobertura de pared a pared, ideal para la corrección técnica de grupos y ensayos coreográficos.",
   },
   {
     icon: Music,
-    value: "PRO",
-    label: "Sistema de sonido",
-    description: "Audio profesional de alta fidelidad",
+    value: "RITMO",
+    label: "Sistema de audio",
+    description:
+      "Conectividad inmediata y nítida para tus playlists, asegurando que la energía de tu clase llegue a cada rincón.",
   },
   {
     icon: TreePine,
-    value: "A1",
-    label: "Piso de madera",
-    description: "Superficie profesional para danza",
+    value: "SUPERFICIE",
+    label: "Piso laminado",
+    description:
+      "Acabado tipo madera que ofrece la estética profesional y el soporte visual necesario para tus sesiones y grabaciones.",
   },
   {
     icon: Wind,
-    value: "24/7",
+    value: "CONFORT",
     label: "Aire acondicionado",
-    description: "Clima controlado todo el año",
+    description:
+      "Clima controlado durante toda tu sesión para garantizar el máximo rendimiento y frescura de tus alumnos.",
   },
   {
     icon: Lamp,
-    value: "LED",
-    label: "Iluminación ajustable",
-    description: "Configurable para cualquier ambiente",
+    value: "AMBIENTE",
+    label: "Iluminación LED",
+    description:
+      "Tecnología LED integrada que crea una atmósfera moderna y vibrante, ideal para grabaciones de contenido.",
   },
   {
     icon: Shirt,
-    value: "2",
-    label: "Vestidores",
-    description: "Espacios privados para cambiarse",
+    value: "ORDEN",
+    label: "Área de resguardo",
+    description:
+      "Espacio privado para que tus alumnos guarden sus pertenencias de forma segura y servicio de sanitario disponible.",
   },
 ];
 
@@ -82,6 +95,45 @@ const GALLERY = [
     label: "ILUMINACIÓN",
     gradient: "from-primary/80 to-[#1a1a1a]",
     className: "col-span-1 h-[250px]",
+  },
+];
+
+const PRACTICAL_INFO = [
+  {
+    icon: MapPin,
+    label: "UBICACIÓN",
+    value: "Av. Delicias",
+    description:
+      "Ubicado en una de las mejores zonas de la ciudad, de fácil acceso.",
+  },
+  {
+    icon: Clock,
+    label: "HORARIOS",
+    value: "7AM – 7PM",
+    description:
+      "Disponible todos los días de 7:00 AM a 7:00 PM para tu comodidad.",
+  },
+  {
+    icon: Armchair,
+    label: "INCLUYE",
+    value: "10 SILLAS",
+    description:
+      "10 sillas plásticas disponibles para tus talleres, clases o eventos.",
+  },
+];
+
+const RULES = [
+  {
+    icon: AlertCircle,
+    text: "Tener cuidado con los espejos",
+  },
+  {
+    icon: UtensilsCrossed,
+    text: "No se puede comer dentro del estudio",
+  },
+  {
+    icon: Droplets,
+    text: "Mantener el baño limpio como se consiguió",
   },
 ];
 
@@ -120,8 +172,9 @@ export default function AlquilerPage() {
               <span className="text-primary">ESTUDIO</span>
             </h1>
             <p className="text-xl text-white/60 max-w-2xl leading-relaxed">
-              Un espacio profesional diseñado para la creatividad. Disponible
-              para alquiler por horas o por jornada.
+              Nuestro espacio está disponible para alquiler. Ideal para ensayos
+              de danza, sesiones fotográficas, grabaciones de video, talleres y
+              eventos privados.
             </p>
           </div>
         </div>
@@ -155,22 +208,6 @@ export default function AlquilerPage() {
                 único, grabar contenido audiovisual o dictar un taller
                 especializado — nuestro estudio se adapta a ti.
               </p>
-
-              <div className="space-y-3">
-                <p className="text-sm font-bold text-[#1a1a1a] uppercase tracking-wider mb-4">
-                  Ideal para:
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {USE_CASES.map((useCase) => (
-                    <div key={useCase} className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
-                      <span className="text-[#1a1a1a]/80 font-medium">
-                        {useCase}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
 
             {/* Image placeholder */}
@@ -204,7 +241,7 @@ export default function AlquilerPage() {
             {FEATURES.map((feature) => (
               <div
                 key={feature.label}
-                className="bg-white rounded-2xl p-8 text-center group hover:bg-[#1a1a1a] transition-colors duration-300"
+                className="bg-white rounded-2xl p-8 text-center group  transition-colors duration-300"
               >
                 <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors duration-300">
                   <feature.icon className="w-7 h-7 text-primary" />
@@ -212,11 +249,49 @@ export default function AlquilerPage() {
                 <p className="text-4xl font-black text-primary mb-1">
                   {feature.value}
                 </p>
-                <p className="text-lg font-bold text-[#1a1a1a] mb-2 group-hover:text-white transition-colors duration-300">
+                <p className="text-lg font-bold text-[#1a1a1a] mb-2  transition-colors duration-300">
                   {feature.label}
                 </p>
-                <p className="text-sm text-[#1a1a1a]/60 group-hover:text-white/60 transition-colors duration-300">
+                <p className="text-sm text-[#1a1a1a]/60  transition-colors duration-300">
                   {feature.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Practical Info Section */}
+      <section className="py-20 px-6 bg-white">
+        <div className="container mx-auto">
+          <div className="text-center mb-16">
+            <p className="text-primary font-bold text-sm uppercase tracking-widest mb-4">
+              Detalles
+            </p>
+            <h2 className="text-4xl lg:text-5xl md:text-7xl font-black text-[#1a1a1a] leading-none">
+              INFORMACIÓN
+              <br />
+              <span className="text-primary">PRÁCTICA</span>
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {PRACTICAL_INFO.map((item) => (
+              <div
+                key={item.label}
+                className="border-2 border-[#1a1a1a]/10 rounded-2xl p-8 text-center group hover:border-primary/40 transition-colors duration-300"
+              >
+                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors duration-300">
+                  <item.icon className="w-7 h-7 text-primary" />
+                </div>
+                <p className="text-xs font-bold text-primary uppercase tracking-widest mb-1">
+                  {item.label}
+                </p>
+                <p className="text-3xl font-black text-[#1a1a1a] mb-3">
+                  {item.value}
+                </p>
+                <p className="text-sm text-[#1a1a1a]/60 leading-relaxed">
+                  {item.description}
                 </p>
               </div>
             ))}
@@ -227,8 +302,8 @@ export default function AlquilerPage() {
       {/* Gallery Section */}
       <section className="py-20 px-6 bg-white">
         <div className="container mx-auto">
-          <div className="mb-12">
-            <h2 className="text-5xl md:text-7xl font-black text-[#1a1a1a] leading-none">
+          <div className="mb-12  text-center lg:text-left">
+            <h2 className="text-4xl lg:text-5xl md:text-7xl font-black text-[#1a1a1a] leading-none">
               EL ESPACIO
             </h2>
             <p className="mt-3 text-[#1a1a1a]/60 font-medium text-lg">
@@ -252,26 +327,27 @@ export default function AlquilerPage() {
         </div>
       </section>
 
-      {/* Pricing / Availability Section */}
+      {/* Rules Section */}
       <section className="py-20 px-6 bg-[#F5F5F0]">
         <div className="container mx-auto">
-          <div className="max-w-3xl mx-auto text-center">
+          <div className="max-w-2xl">
             <p className="text-primary font-bold text-sm uppercase tracking-widest mb-4">
-              Disponibilidad
+              Convivencia
             </p>
-            <h2 className="text-4xl md:text-5xl font-black text-[#1a1a1a] mb-6 leading-tight">
-              RESERVA TU
+            <h2 className="text-5xl md:text-7xl font-black text-[#1a1a1a] leading-none mb-12">
+              REGLAS
               <br />
-              <span className="text-primary">HORARIO</span>
+              <span className="text-primary">DEL ESTUDIO</span>
             </h2>
-            <p className="text-lg text-[#1a1a1a]/70 leading-relaxed mb-4">
-              Ofrecemos tarifas flexibles adaptadas a tus necesidades.
-              Alquiler disponible por horas, medio día o jornada completa.
-            </p>
-            <p className="text-lg text-[#1a1a1a] leading-relaxed font-medium">
-              Contáctanos directamente para consultar disponibilidad, tarifas
-              y reservar tu espacio.
-            </p>
+          </div>
+
+          <div className="max-w-2xl flex flex-col divide-y divide-[#1a1a1a]/10">
+            {RULES.map((rule, index) => (
+              <div key={index} className="flex items-center gap-5 py-6">
+                <rule.icon className="w-5 h-5 text-primary flex-shrink-0" />
+                <p className="text-xl font-bold text-[#1a1a1a]">{rule.text}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -292,7 +368,6 @@ export default function AlquilerPage() {
           </h2>
           <p className="text-xl text-white/80 max-w-2xl mx-auto mb-10 leading-relaxed">
             Escríbenos por WhatsApp y te ayudaremos a coordinar tu reserva.
-            Respuesta inmediata garantizada.
           </p>
           <div className="flex flex-col md:flex-row gap-4 justify-center">
             <a

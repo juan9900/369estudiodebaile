@@ -5,6 +5,12 @@ import { DanceClass } from "@/lib/types/database";
 import { CheckoutForm } from "./checkout-form";
 import { formatDate } from "../classes-carousel";
 
+const titles = {
+  clases: "Clase",
+  masterclass: "Masterclass",
+  proyectos: "Proyecto",
+};
+
 export default function CheckOutContainer({
   danceClass,
   cashDepositPercentage,
@@ -14,6 +20,8 @@ export default function CheckOutContainer({
   cashDepositPercentage: number;
   euroRate: number | null;
 }) {
+  const title = titles[danceClass.class_type] || "Clase";
+
   // Step state
   const [step, setStep] = useState<1 | 2 | 3>(1);
   return (
@@ -22,7 +30,8 @@ export default function CheckOutContainer({
       {step !== 3 && (
         <div className="text-center mb-8">
           <h1 className="text-7xl font-black uppercase text-white mb-1">
-            <span className="text-3xl block">Clase de:</span> {danceClass.genre}
+            <span className="text-3xl block">{title} de:</span>{" "}
+            {danceClass.genre}
           </h1>
           <h2 className="text-white text-xl font-bol">
             {danceClass.instructor}
@@ -41,7 +50,13 @@ export default function CheckOutContainer({
       )}
 
       {/* Multi-step form */}
-      <CheckoutForm step={step} setStep={setStep} danceClass={danceClass} cashDepositPercentage={cashDepositPercentage} euroRate={euroRate} />
+      <CheckoutForm
+        step={step}
+        setStep={setStep}
+        danceClass={danceClass}
+        cashDepositPercentage={cashDepositPercentage}
+        euroRate={euroRate}
+      />
     </>
   );
 }

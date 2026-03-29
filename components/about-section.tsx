@@ -13,15 +13,13 @@ export function AboutSection() {
               NOSOTROS
             </h2>
             <p className="text-lg text-[#1a1a1a] leading-relaxed">
-              En Estudio 369, creemos que el baile es más que movimiento—es
-              expresión, conexión y transformación. Nuestro espacio profesional
-              está diseñado para inspirarte a descubrir tu mejor versión a
-              través del ritmo.
-            </p>
-            <p className="text-lg text-[#1a1a1a] leading-relaxed">
-              Con instructores expertos y un ambiente acogedor, ofrecemos clases
-              intensivas cada sábado para todos los niveles. Ya seas
-              principiante o bailarín experimentado, aquí encontrarás tu lugar.
+              En 369 Estudio, creemos que el baile es más que movimiento, es
+              expresión, armonía y pasión. Nuestro espacio profesional está
+              diseñado para inspirarte a descubrir tu mejor versión a través del
+              ritmo. <br /> <br /> Con instructores expertos y un ambiente
+              acogedor, ofrecemos clases cada sábado y domingo para todos los
+              niveles. Ya seas bailarín principiante o experimentado, aquí
+              encontrarás tu lugar.
             </p>
             <Link
               href="/nosotros"

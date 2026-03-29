@@ -103,9 +103,9 @@ export function ClassIntegratedContentSection({
   const hasLinks = danceClass.song_youtube_url;
 
   return (
-    <section className="py-16 px-6 bg-gradient-to-b from-white to-gray-50/50">
+    <section className="py-16 px-6 bg-white">
       <div className="container mx-auto max-w-7xl">
-        <div className="grid lg:grid-cols-2 gap-8 items-start">
+        <div className="grid lg:grid-cols-2 gap-8 items-stretch">
           {/* LEFT: Instructor Information */}
           <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200 shadow-md transition-transform ">
             <div className="flex flex-col items-center lg:flex-row gap-6 lg:items-center mb-6 ">
@@ -304,7 +304,7 @@ export function ClassIntegratedContentSection({
                   </p>
                 </div>
                 <div
-                  className={`rounded-2xl overflow-hidden shadow-lg border-2 border-gray-200 ${
+                  className={`rounded-2xl overflow-hidden shadow-lg border-2 border-gray-200 h-[500px] ${
                     isShorts ? "aspect-[9/16] max-w-sm mx-auto" : "aspect-video"
                   }`}
                 >

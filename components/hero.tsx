@@ -17,8 +17,8 @@ export function Hero() {
 
           <div className="flex items-start gap-4 mb-8">
             <p className="text-lg text-[#1a1a1a] max-w-xl leading-relaxed">
-              Eleva tu ritmo cada sábado. Descubre tu pasión con nuestros
-              intensivos diseñados para todos los niveles.
+              Eleva tu ritmo cada Sábado y Domingo. Alimenta tu pasión con
+              nuestras coreografías diseñadas para todos los niveles.
             </p>
             <div className="flex-shrink-0 mt-2">
               <svg
@@ -40,12 +40,6 @@ export function Hero() {
               className="bg-primary text-white font-bold px-8 py-3 rounded-lg hover:bg-primary-dark transition-colors text-center"
             >
               VER HORARIOS
-            </a>
-            <a
-              href="#sobre-nosotros"
-              className="border-2 border-primary text-primary font-bold px-8 py-3 rounded-lg hover:bg-primary hover:text-white transition-colors text-center"
-            >
-              SABER MÁS
             </a>
           </div>
         </div>

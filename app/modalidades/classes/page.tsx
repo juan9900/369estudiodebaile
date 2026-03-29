@@ -15,27 +15,36 @@ export default function IndividualesPage() {
       {/* Hero */}
       <section className="relative bg-[#F5F5F0] py-20 px-6 overflow-hidden border-b-2 border-primary">
         <div className="absolute inset-0 flex items-center justify-center opacity-10">
-          <span className="text-[400px] md:text-[500px] font-black text-primary transform -rotate-12 translate-x-20 translate-y-10">
+          <span className="text-[150px] md:text-[500px] font-black text-primary transform -rotate-12 lg:translate-x-20 lg:translate-y-10">
             369
           </span>
         </div>
 
         <div className="container mx-auto relative z-10">
           <div className="max-w-4xl">
-            <h1 className="text-5xl md:text-8xl font-black text-[#1a1a1a] mb-8 leading-none">
+            <h1 className="text-5xl md:text-8xl font-black text-primary mb-8 leading-none">
               CLASES
               <br />
-              <span className="text-primary">INDIVIDUALES</span>
             </h1>
 
             <div className="flex items-start gap-4 mb-8">
               <p className="text-lg text-[#1a1a1a] max-w-xl leading-relaxed">
-                La atención es completamente tuya. Nuestros instructores diseñan
-                cada sesión a medida de tu nivel, estilo y objetivos. Ya seas
-                principiante o bailarín con experiencia, aquí encontrarás el
-                espacio para crecer sin prisa y con propósito.
+                En nuestras clases, cada encuentro es una nueva oportunidad de
+                brillar. La dinámica es simple pero poderosa: en una sola
+                sesión, aprenderás una coreografía completamente nueva, diseñada
+                para que puedas dominarla sin importar tu nivel.
+                <br />
+                <br /> Al final de la clase, llegará tu momento de protagonista.
+                Te grabarás individualmente, llevándote a casa no solo una
+                rutina aprendida, sino un video profesional de tu desempeño. Es
+                la forma perfecta de medir tu progreso, ganar confianza y llenar
+                tu galería de contenido increíble. <br />
+                <br />
+                <span className="text-xl font-bold uppercase">
+                  ¿Te animas al reto semanal?
+                </span>
               </p>
-              <div className="flex-shrink-0 mt-2">
+              <div className="flex-shrink-0 mt-2 hidden lg:block">
                 <svg
                   width="40"
                   height="40"
@@ -53,7 +62,7 @@ export default function IndividualesPage() {
       </section>
 
       {/* Carousel */}
-      <ClassesCarousel classType="individual" />
+      <ClassesCarousel classType="clases" />
     </>
   );
 }

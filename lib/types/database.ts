@@ -37,7 +37,7 @@ export interface DanceClass {
   song_title: string | null;
   song_artist: string | null;
   song_youtube_url: string | null;
-  class_type: 'individual' | 'masterclass' | 'proyecto';
+  class_type: "clases" | "masterclass" | "proyectos";
   instructor_instagram_url: string | null;
 }
 

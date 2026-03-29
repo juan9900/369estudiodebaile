@@ -345,7 +345,7 @@ export function CheckoutForm({
         </div>
 
         <div className="flex gap-3">
-          <Link href={`/clases/${danceClass.id}`} className="flex-1">
+          <Link href={`/modalidades/${danceClass.id}`} className="flex-1">
             <Button
               variant="outline"
               className="w-full border-white/30 text-primary hover:text-primary font-black hover:bg-gray-200"

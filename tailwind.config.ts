@@ -56,8 +56,8 @@ export default {
         },
         primary: {
           DEFAULT: " #8b1e2d",
-          dark: " #6c1717",
-          darker: " #691621",
+          dark: " #6f1824",
+          darker: " #53121b",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",

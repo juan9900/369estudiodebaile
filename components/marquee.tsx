@@ -1,6 +1,6 @@
 export function Marquee() {
   const text =
-    "URBANO • JAZZ • POP • FLAMENCO • ÁRABE • CONTEMPORÁNEO • AFRO • SALSA • K-POP • BACHATA • KIZOMBA • WAACKING • POPPING";
+    "URBANO • JAZZ • POP • ÁRABE • CONTEMPORÁNEO • AFRO • SALSA • K-POP • BACHATA • KIZOMBA • WAACKING • POPPING";
 
   return (
     <section className="bg-primary py-4 overflow-hidden">

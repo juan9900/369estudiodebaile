@@ -1,72 +1,42 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "./ui/button";
+import { useMobileMenu } from "@/lib/hooks/use-mobile-menu";
 
 export const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const toggleMenu = () => setIsOpen(!isOpen);
-  const closeMenu = () => setIsOpen(false);
-
-  // Body scroll lock
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isOpen]);
-
-  // Close menu on Escape key
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        closeMenu();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener("keydown", handleEscape);
-    }
-
-    return () => {
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [isOpen]);
+  const { isOpen, toggle: toggleMenu, close: closeMenu } = useMobileMenu();
 
   return (
     <nav className="w-full bg-white border-b border-gray-200">
-      <div className="container mx-auto flex justify-between items-center py-4 px-6">
-        <Link href="/" className="text-2xl font-bold text-[#1a1a1a]">
-          369 ESTUDIO
-        </Link>
-
+      <div className="container mx-auto flex justify-end items-center py-4 px-6">
         {/* Desktop Navigation */}
+
         <div className="hidden md:flex items-center gap-8">
           <Link
-            href="#sobre-nosotros"
+            href="/"
+            className="text-sm font-semibold text-[#1a1a1a] hover:text-primary transition-colors"
+          >
+            INICIO
+          </Link>
+          <Link
+            href="/nosotros"
             className="text-sm font-semibold text-[#1a1a1a] hover:text-primary transition-colors"
           >
             SOBRE NOSOTROS
           </Link>
           <Link
-            href="#clases"
+            href="/#clases"
             className="text-sm font-semibold text-[#1a1a1a] hover:text-primary transition-colors"
           >
             CLASES
           </Link>
           <Link
-            href="#contacto"
+            href="/alquiler"
             className="text-sm font-semibold text-[#1a1a1a] hover:text-primary transition-colors"
           >
-            CONTACTO
+            RENTAR ESTUDIO
           </Link>
         </div>
 
@@ -89,25 +59,32 @@ export const Navbar = () => {
         >
           <div className="flex flex-col items-center justify-center h-full gap-8">
             <Link
-              href="#sobre-nosotros"
+              href="/"
+              onClick={closeMenu}
+              className="text-2xl font-semibold text-[#1a1a1a] hover:text-primary transition-colors"
+            >
+              INICIO
+            </Link>
+            <Link
+              href="/nosotros"
               onClick={closeMenu}
               className="text-2xl font-semibold text-[#1a1a1a] hover:text-primary transition-colors"
             >
               SOBRE NOSOTROS
             </Link>
             <Link
-              href="#clases"
+              href="/#clases"
               onClick={closeMenu}
               className="text-2xl font-semibold text-[#1a1a1a] hover:text-primary transition-colors"
             >
               CLASES
             </Link>
             <Link
-              href="#contacto"
+              href="/alquiler"
               onClick={closeMenu}
               className="text-2xl font-semibold text-[#1a1a1a] hover:text-primary transition-colors"
             >
-              CONTACTO
+              RENTAR ESTUDIO
             </Link>
           </div>
         </div>

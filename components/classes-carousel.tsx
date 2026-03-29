@@ -5,7 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { DanceClass } from "@/lib/types/database";
 import { Button } from "./ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Clock } from "lucide-react";
 
 function formatTime(time: string) {
   const [h, m] = time.split(":").map(Number);
@@ -18,13 +18,12 @@ export function formatDate(date: string) {
   const [year, month, day] = date.split("-").map(Number);
   return new Date(year, month - 1, day).toLocaleDateString("es-ES", {
     day: "numeric",
-    month: "short",
-    weekday: "long",
+    month: "long",
   });
 }
 
 interface ClassesCarouselProps {
-  classType: "individual" | "masterclass" | "proyecto";
+  classType: "clases" | "masterclass" | "proyectos";
 }
 
 export function ClassesCarousel({ classType }: ClassesCarouselProps) {
@@ -81,12 +80,12 @@ export function ClassesCarousel({ classType }: ClassesCarouselProps) {
   }
 
   return (
-    <section className="py-20 px-6 bg-[#F5F5F0]">
+    <section className="py-20 px-6 bg-primary">
       <div className="container mx-auto">
         <div className="flex justify-between items-end mb-12">
           <div>
-            <h2 className="text-5xl font-black text-[#1a1a1a]">
-              PRÓXIMAS CLASES
+            <h2 className="text-4xl lg:text-5xl font-black text-white uppercase">
+              {classType !== "proyectos" ? "PRÓXIMAS" : "PRÓXIMOS"} {classType}
             </h2>
           </div>
           {!loading && classes.length > 0 && (
@@ -94,7 +93,7 @@ export function ClassesCarousel({ classType }: ClassesCarouselProps) {
               <button
                 onClick={() => scroll("left")}
                 disabled={!canScrollLeft}
-                className="p-2 rounded-full border-2 border-primary text-primary disabled:opacity-30 hover:bg-primary hover:text-white transition-colors"
+                className="p-2 rounded-full border-2 border-white text-white disabled:opacity-30 hover:bg-primary hover:text-white transition-colors"
                 aria-label="Anterior"
               >
                 <ChevronLeft className="w-5 h-5" />
@@ -102,7 +101,7 @@ export function ClassesCarousel({ classType }: ClassesCarouselProps) {
               <button
                 onClick={() => scroll("right")}
                 disabled={!canScrollRight}
-                className="p-2 rounded-full border-2 border-primary text-primary disabled:opacity-30 hover:bg-primary hover:text-white transition-colors"
+                className="p-2 rounded-full border-2 border-white text-white disabled:opacity-30 hover:bg-primary hover:text-white transition-colors"
                 aria-label="Siguiente"
               >
                 <ChevronRight className="w-5 h-5" />
@@ -121,8 +120,9 @@ export function ClassesCarousel({ classType }: ClassesCarouselProps) {
             ))}
           </div>
         ) : classes.length === 0 ? (
-          <p className="text-center text-primary py-12 font-bold">
-            No hay clases activas en este momento.
+          <p className="text-center text-white py-12 font-bold">
+            No hay {classType}{" "}
+            {classType !== "proyectos" ? "activas" : "activos"} en este momento.
           </p>
         ) : (
           <div
@@ -133,33 +133,50 @@ export function ClassesCarousel({ classType }: ClassesCarouselProps) {
             {classes.map((cls) => (
               <Link
                 key={cls.id}
-                href={`/clases/${cls.id}`}
+                href={`/modalidades/${cls.id}`}
                 className="group relative h-96 rounded-lg overflow-hidden flex-none flex flex-col justify-between p-6 snap-start
                   w-full
                   md:w-[calc(50%-12px)]
                   lg:w-[calc(33.333%-16px)]"
               >
-                <div
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
-                  style={{ backgroundImage: `url(${cls.image_url})` }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-primary/95 via-primary/60 to-transparent" />
+                <div className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110 bg-white" />
+                <div className="absolute " />
 
                 <div className="relative z-10 flex flex-col justify-between h-full space-y-1">
-                  <div>
-                    <h3 className="text-3xl font-black text-white">
-                      {cls.title.toUpperCase()}
+                  <div className=""></div>
+                  <div className="flex flex-col gap-3">
+                    <h3 className="text-3xl font-black text-primary text-center uppercase ">
+                      {cls.class_type === "clases" ? cls.genre : cls.title}
                     </h3>
-                    <p className="text-white/90 text-md font-bold">
-                      Instructor: {cls.instructor}
-                    </p>
+
+                    <div className="flex flex-row items-center justify-between relative z-10 text-primary uppercase font-bold py-2 rounded-md text-2xl  w-4/5 mx-auto ">
+                      <div className="w-2/5 ">
+                        <span className="text-gray-600 flex flex-col  items-center gap-1 text-sm font-bold uppercase ">
+                          <Calendar size={15} />
+                          {formatDate(cls.scheduled_date)}
+                        </span>
+                      </div>
+                      <div className="flex-shrink w-1/5  flex items-center justify-center">
+                        <div className="rounded-full bg-primary/30 h-2 w-2"></div>
+                      </div>
+                      <div className="w-2/5 ">
+                        <span className="text-gray-600 flex flex-col  items-center gap-1 text-sm font-bold uppercase ">
+                          <Clock size={15} />
+                          {formatTime(cls.start_time).toString()}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <span className="text-primary/80 uppercase text-sm font-semibold">
+                        Instructor:
+                      </span>
+                      <p className="text-gray-700 text-md font-semibold uppercase text-center text-lg">
+                        {cls.instructor}
+                      </p>
+                    </div>
                   </div>
                   <div className="flex flex-col gap-4">
-                    <div className="flex flex-col items-start relative z-10 text-white uppercase font-bold py-2 rounded-md text-2xl w-fit">
-                      <span>{formatDate(cls.scheduled_date)}</span>
-                      <span>{formatTime(cls.start_time)}</span>
-                    </div>
-                    <Button className="w-full bg-white text-primary hover:bg-gray-100 font-bold">
+                    <Button className="w-full bg-primary text-white hover:bg-primary-dark font-bold">
                       RESERVAR
                     </Button>
                   </div>
@@ -174,7 +191,7 @@ export function ClassesCarousel({ classType }: ClassesCarouselProps) {
             <button
               onClick={() => scroll("left")}
               disabled={!canScrollLeft}
-              className="p-2 rounded-full border-2 border-primary text-primary disabled:opacity-30 hover:bg-primary hover:text-white transition-colors"
+              className="p-2 rounded-full border-2 border-primary text-white disabled:opacity-30 hover:bg-primary hover:text-white transition-colors"
               aria-label="Anterior"
             >
               <ChevronLeft className="w-5 h-5" />
@@ -182,7 +199,7 @@ export function ClassesCarousel({ classType }: ClassesCarouselProps) {
             <button
               onClick={() => scroll("right")}
               disabled={!canScrollRight}
-              className="p-2 rounded-full border-2 border-primary text-primary disabled:opacity-30 hover:bg-primary hover:text-white transition-colors"
+              className="p-2 rounded-full border-2 border-primary text-white disabled:opacity-30 hover:bg-primary hover:text-white transition-colors"
               aria-label="Siguiente"
             >
               <ChevronRight className="w-5 h-5" />

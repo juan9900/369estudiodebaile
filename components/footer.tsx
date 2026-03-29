@@ -4,11 +4,14 @@ export const Footer = () => {
       <div className="container mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div>
-            <h3 className="text-2xl font-bold mb-2">369 ESTUDIO</h3>
+            <h3 className="text-2xl font-bold mb-2">369 ESTUDIO DE BAILE</h3>
             <p className="text-white/80 text-sm">
-              © 2026 Estudio de Baile 369. Todos los derechos reservados.
+              © {new Date().getFullYear()} Todos los derechos reservados.
             </p>
-            <p className="text-white/80 text-sm mt-1">Calle Ejemplo 123, Ciudad, País</p>
+            <p className="text-white/80 text-sm mt-1">
+              Av. Las Delicias - entre calle 67A y 67B - edificio gredos, al
+              lado del restaurante piamonte y comercio &quot;Bipolar&quot;
+            </p>
             <a
               href="mailto:info@369estudio.com"
               className="text-white/80 text-sm hover:text-white transition-colors"

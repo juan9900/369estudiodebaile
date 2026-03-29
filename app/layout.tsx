@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
   title: "Estudio de Baile 369",
   description:
-    "Eleva tu ritmo cada sábado. Descubre tu pasión con nuestros intensivos diseñados para todos los niveles.",
+    "Eleva tu ritmo cada Sábado y Domingo. Alimenta tu pasión con nuestras coreografías diseñadas para todos los niveles.",
 };
 
 const montserrat = Montserrat({

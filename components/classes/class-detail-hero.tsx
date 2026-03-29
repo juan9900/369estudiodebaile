@@ -4,52 +4,34 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
-const FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1504609813442-a8924e83f76e?w=1600&h=900&fit=crop";
-
 interface ClassDetailHeroProps {
   danceClass: DanceClass;
 }
 
 export function ClassDetailHero({ danceClass }: ClassDetailHeroProps) {
-  const image = danceClass.image_url || FALLBACK_IMAGE;
   const spotsLeft = danceClass.max_capacity - danceClass.current_enrollment;
 
   return (
-    <section className="relative min-h-[85vh] flex items-end overflow-hidden">
-      {/* Background image with zoom effect */}
-      <div
-        className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 scale-105 hover:scale-110"
-        style={{ backgroundImage: `url(${image})` }}
-      />
-
-      {/* Dark overlay gradient */}
-      <div className="absolute inset-0 bg-gradient-to-t from-primary/95 via-primary/70 to-transparent" />
-
+    <section className="relative min-h-[55vh] lg:min-h-[50vh] flex items-end overflow-hidden bg-primary">
       {/* Back button */}
-      <div className="absolute top-6 left-6 z-10">
+      <div className="absolute top-6 left-6 z-50">
         <Link
-          href="/"
-          className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/30 text-white font-bold px-4 py-2 rounded-full hover:bg-white/30 transition-colors text-sm"
+          href={`/modalidades/${danceClass.class_type}`}
+          className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/30 text-white font-bold px-4 py-2 rounded-full hover:bg-white/30 transition-colors text-sm z-20"
         >
           <ArrowLeft className="w-4 h-4" />
-          Volver al inicio
+          Volver a {danceClass.class_type}
         </Link>
       </div>
 
       {/* Content positioned at bottom */}
       <div className="relative z-10 w-full px-6 py-16">
         <div className="container mx-auto max-w-4xl">
-          {/* Dance style badge */}
-          {danceClass.dance_style && (
-            <Badge className="mb-4 bg-white/20 backdrop-blur-sm text-white border-white/30 hover:bg-white/30 transition-colors">
-              {danceClass.dance_style.toUpperCase()}
-            </Badge>
-          )}
-
           {/* Title */}
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-white mb-4 leading-tight">
-            {danceClass.title}
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-white mb-4 leading-tight uppercase">
+            {danceClass.class_type !== "clases"
+              ? danceClass.title
+              : danceClass.genre}
           </h1>
 
           {/* Description */}
@@ -60,7 +42,7 @@ export function ClassDetailHero({ danceClass }: ClassDetailHeroProps) {
           )}
 
           {/* CTA */}
-          <Link href={`/clases/${danceClass.id}#reservar`}>
+          <Link href={`#reservar`}>
             <Button
               disabled={spotsLeft > 0 ? false : true}
               className=" bg-white  text-primary hover:bg-gray-100 font-black text-base h-12 px-8 group shadow-lg hover:shadow-xl transition-all"

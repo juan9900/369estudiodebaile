@@ -13,9 +13,7 @@ export default function Home() {
       <Navbar />
       <Hero />
       <Marquee />
-      <AboutSection />
       <ClassesSection />
-      <StudioRentalSection />
 
       <Footer />
     </>

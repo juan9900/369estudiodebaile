@@ -108,7 +108,10 @@ export default function NosotrosPage() {
         </div>
 
         {/* Diagonal divider */}
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-white" style={{ clipPath: "polygon(0 100%, 100% 0, 100% 100%)" }} />
+        <div
+          className="absolute bottom-0 left-0 right-0 h-16 bg-white"
+          style={{ clipPath: "polygon(0 100%, 100% 0, 100% 100%)" }}
+        />
       </section>
 
       {/* Story Section */}
@@ -132,9 +135,9 @@ export default function NosotrosPage() {
               </p>
               <p className="text-lg text-[#1a1a1a] leading-relaxed mb-6">
                 Nuestro espacio profesional cuenta con pisos de madera de alta
-                calidad, espejos de pared completa, sistema de sonido
-                envolvente y todo lo necesario para que cada sesión sea una
-                experiencia transformadora.
+                calidad, espejos de pared completa, sistema de sonido envolvente
+                y todo lo necesario para que cada sesión sea una experiencia
+                transformadora.
               </p>
               <p className="text-lg text-[#1a1a1a]/70 leading-relaxed">
                 Creemos que el baile es un lenguaje universal que conecta
@@ -248,13 +251,13 @@ export default function NosotrosPage() {
               <p className="text-lg text-[#1a1a1a] leading-relaxed mb-6">
                 Nuestro equipo de instructores combina años de experiencia
                 profesional con una dedicación inquebrantable a la enseñanza.
-                Cada uno aporta su estilo único y su energía contagiosa a
-                cada clase.
+                Cada uno aporta su estilo único y su energía contagiosa a cada
+                clase.
               </p>
               <p className="text-lg text-[#1a1a1a]/70 leading-relaxed">
                 Desde salsa y bachata hasta danza contemporánea y urbana,
-                nuestros profesores están comprometidos con tu crecimiento
-                como bailarín y como persona.
+                nuestros profesores están comprometidos con tu crecimiento como
+                bailarín y como persona.
               </p>
             </div>
           </div>
@@ -276,8 +279,8 @@ export default function NosotrosPage() {
             LA PISTA
           </h2>
           <p className="text-xl text-white/80 max-w-2xl mx-auto mb-10 leading-relaxed">
-            No importa si nunca has bailado o si llevas años haciéndolo.
-            En Estudio 369, hay un espacio reservado para ti.
+            No importa si nunca has bailado o si llevas años haciéndolo. En
+            Estudio 369, hay un espacio reservado para ti.
           </p>
           <div className="flex flex-col md:flex-row gap-4 justify-center">
             <Link
@@ -287,14 +290,6 @@ export default function NosotrosPage() {
               VER CLASES
               <ArrowRight className="w-5 h-5" />
             </Link>
-            <a
-              href="https://wa.me/584246257045"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 border-2 border-white text-white font-bold px-8 py-3 rounded-lg hover:bg-white hover:text-primary transition-colors"
-            >
-              CONTÁCTANOS
-            </a>
           </div>
         </div>
       </section>

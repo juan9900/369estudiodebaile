@@ -48,13 +48,13 @@ export function ClassForm({ initialData }: ClassFormProps) {
     max_capacity: initialData?.max_capacity ?? 20,
     price:
       initialData?.price?.toString() ??
-      (initialData?.class_type === "individual" || !initialData ? "5" : ""),
+      (initialData?.class_type === "clases" || !initialData ? "5" : ""),
     genre: initialData?.genre ?? "",
     level: initialData?.level ?? 1,
     is_active: initialData?.is_active ?? true,
     class_type:
       initialData?.class_type ??
-      ("individual" as "individual" | "masterclass" | "proyecto"),
+      ("clases" as "clases" | "masterclass" | "proyectos"),
     image_url: initialData?.image_url ?? "",
     instructor_photo_url: initialData?.instructor_photo_url ?? "",
     instructor_instagram_url: initialData?.instructor_instagram_url ?? "",
@@ -113,7 +113,7 @@ export function ClassForm({ initialData }: ClassFormProps) {
   const occupiedSlots = getOccupiedSlots(existingClasses, allSlots);
 
   const isFreeSchedule =
-    form.class_type === "masterclass" || form.class_type === "proyecto";
+    form.class_type === "masterclass" || form.class_type === "proyectos";
 
   // For normal classes, a start slot is only valid if the full 1-hour block is free
   const startTimeSlots = allSlots.filter((slot) => {
@@ -281,9 +281,9 @@ export function ClassForm({ initialData }: ClassFormProps) {
         <div className="flex gap-6">
           {(
             [
-              { value: "individual", label: "Clase individual" },
+              { value: "clases", label: "Clase individual" },
               { value: "masterclass", label: "Masterclass" },
-              { value: "proyecto", label: "Proyecto" },
+              { value: "proyectos", label: "Proyecto" },
             ] as const
           ).map(({ value, label }) => (
             <label
@@ -302,9 +302,9 @@ export function ClassForm({ initialData }: ClassFormProps) {
                     start_time: "",
                     end_time: "",
                     price:
-                      value === "individual"
+                      value === "clases"
                         ? "5"
-                        : prev.class_type === "individual"
+                        : prev.class_type === "clases"
                           ? ""
                           : prev.price,
                   }))
@@ -366,9 +366,7 @@ export function ClassForm({ initialData }: ClassFormProps) {
 
       <div className="grid gap-2">
         <Label htmlFor="scheduled_date">
-          {form.class_type === "individual"
-            ? "Fecha (Sábado o Domingo)"
-            : "Fecha"}
+          {form.class_type === "clases" ? "Fecha (Sábado o Domingo)" : "Fecha"}
         </Label>
         <Input
           id="scheduled_date"
@@ -481,8 +479,13 @@ export function ClassForm({ initialData }: ClassFormProps) {
                   return slot.start < clsEnd && slot.end > clsStart;
                 });
                 return (
-                  <SelectItem key={slot.start} value={slot.start} disabled={isOccupied}>
-                    {formatTimeAMPM(slot.start)} – {formatTimeAMPM(slot.end)}{isOccupied ? " (ocupado)" : ""}
+                  <SelectItem
+                    key={slot.start}
+                    value={slot.start}
+                    disabled={isOccupied}
+                  >
+                    {formatTimeAMPM(slot.start)} – {formatTimeAMPM(slot.end)}
+                    {isOccupied ? " (ocupado)" : ""}
                   </SelectItem>
                 );
               })}
@@ -515,7 +518,7 @@ export function ClassForm({ initialData }: ClassFormProps) {
             value={form.price}
             onChange={handleChange}
             placeholder="0.00"
-            disabled={form.class_type === "individual"}
+            disabled={form.class_type === "clases"}
           />
         </div>
       </div>
