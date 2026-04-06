@@ -133,7 +133,7 @@ const RULES = [
   },
   {
     icon: Droplets,
-    text: "Mantener el baño limpio como se consiguió",
+    text: "Mantener los espacios limpios",
   },
 ];
 

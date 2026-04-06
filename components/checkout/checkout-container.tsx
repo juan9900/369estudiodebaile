@@ -13,11 +13,9 @@ const titles = {
 
 export default function CheckOutContainer({
   danceClass,
-  cashDepositPercentage,
   euroRate,
 }: {
   danceClass: DanceClass;
-  cashDepositPercentage: number;
   euroRate: number | null;
 }) {
   const title = titles[danceClass.class_type] || "Clase";
@@ -54,7 +52,6 @@ export default function CheckOutContainer({
         step={step}
         setStep={setStep}
         danceClass={danceClass}
-        cashDepositPercentage={cashDepositPercentage}
         euroRate={euroRate}
       />
     </>

@@ -15,7 +15,7 @@ export default async function CheckoutPage({
   const supabase = await createClient();
   const classId = (await params).id;
 
-  const [{ data }, { data: settingsData }] = await Promise.all([
+  const [{ data }] = await Promise.all([
     supabase
       .from("classes")
       .select("*, registrations(count)")
@@ -23,7 +23,6 @@ export default async function CheckoutPage({
       .eq("id", classId)
       .eq("is_active", true)
       .single(),
-    supabase.from("studio_settings").select("cash_deposit_percentage").single(),
   ]);
 
   if (!data) notFound();
@@ -34,7 +33,6 @@ export default async function CheckoutPage({
       (data.registrations as { count: number }[])?.[0]?.count ?? 0,
   } as DanceClass;
   const spotsLeft = danceClass.max_capacity - danceClass.current_enrollment;
-  const cashDepositPercentage = settingsData?.cash_deposit_percentage ?? 10;
 
   let euroRate: number | null = null;
   try {
@@ -73,7 +71,7 @@ export default async function CheckoutPage({
   return (
     <div className="min-h-screen bg-primary flex items-center justify-center px-6">
       <div className="max-w-xl w-full">
-        <CheckOutContainer danceClass={danceClass} cashDepositPercentage={cashDepositPercentage} euroRate={euroRate} />
+        <CheckOutContainer danceClass={danceClass} euroRate={euroRate} />
       </div>
     </div>
   );

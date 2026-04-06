@@ -12,7 +12,7 @@ export function ClassDetailHero({ danceClass }: ClassDetailHeroProps) {
   const spotsLeft = danceClass.max_capacity - danceClass.current_enrollment;
 
   return (
-    <section className="relative min-h-[55vh] lg:min-h-[50vh] flex items-end overflow-hidden bg-primary">
+    <section className="relative min-h-[55vh] lg:min-h-[40vh] flex items-end overflow-hidden bg-primary">
       {/* Back button */}
       <div className="absolute top-6 left-6 z-50">
         <Link

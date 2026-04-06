@@ -22,19 +22,20 @@ export default function ProyectosPage() {
 
         <div className="container mx-auto relative z-10">
           <div className="max-w-4xl">
-            <h1 className="text-4xl md:text-8xl font-black text-[#1a1a1a] mb-8 leading-none ">
+            <h1 className="text-4xl md:text-8xl font-black text-[#1a1a1a]  leading-none mb-5">
               PROYECTOS
-              <br />
-              <span className="text-primary text-3xl">COREOGRÁFICOS</span>
+              <span className="text-primary text-3xl lg:text-5xl block">
+                COREOGRÁFICOS
+              </span>
             </h1>
 
             <div className="flex items-start gap-4 mb-8">
               <div className="lg:w-3/5">
-                <span className="block mt-5 text-2xl font-black uppercase pb-5">
+                <span className="block mt-5 text-2xl font-black uppercase pb-1">
                   ¿Qué ofrecemos?
                 </span>
 
-                <ul className="list-disc ">
+                <ul className="list-none ">
                   <li className="my-3">
                     <span className="font-bold text-primary uppercase">
                       Planes vacacionales:

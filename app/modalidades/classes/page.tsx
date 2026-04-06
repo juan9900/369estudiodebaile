@@ -32,7 +32,7 @@ export default function IndividualesPage() {
                 En nuestras clases, cada encuentro es una nueva oportunidad de
                 brillar. La dinámica es simple pero poderosa: en una sola
                 sesión, aprenderás una coreografía completamente nueva, diseñada
-                para que puedas dominarla sin importar tu nivel.
+                para que puedas dominarla.
                 <br />
                 <br /> Al final de la clase, llegará tu momento de protagonista.
                 Te grabarás individualmente, llevándote a casa no solo una

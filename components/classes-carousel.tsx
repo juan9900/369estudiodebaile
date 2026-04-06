@@ -145,7 +145,7 @@ export function ClassesCarousel({ classType }: ClassesCarouselProps) {
                 <div className="relative z-10 flex flex-col justify-between h-full space-y-1">
                   <div className=""></div>
                   <div className="flex flex-col gap-3">
-                    <h3 className="text-3xl font-black text-primary text-center uppercase ">
+                    <h3 className="text-4xl font-black text-primary text-center uppercase ">
                       {cls.class_type === "clases" ? cls.genre : cls.title}
                     </h3>
 

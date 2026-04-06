@@ -20,24 +20,24 @@ export const Navbar = () => {
           >
             INICIO
           </Link>
-          <Link
+          {/* <Link
             href="/nosotros"
             className="text-sm font-semibold text-[#1a1a1a] hover:text-primary transition-colors"
           >
             SOBRE NOSOTROS
-          </Link>
+          </Link> */}
           <Link
             href="/#clases"
             className="text-sm font-semibold text-[#1a1a1a] hover:text-primary transition-colors"
           >
             CLASES
           </Link>
-          <Link
+          {/* <Link
             href="/alquiler"
             className="text-sm font-semibold text-[#1a1a1a] hover:text-primary transition-colors"
           >
             RENTAR ESTUDIO
-          </Link>
+          </Link> */}
         </div>
 
         {/* Mobile Hamburger Button */}
@@ -65,13 +65,13 @@ export const Navbar = () => {
             >
               INICIO
             </Link>
-            <Link
+            {/* <Link
               href="/nosotros"
               onClick={closeMenu}
               className="text-2xl font-semibold text-[#1a1a1a] hover:text-primary transition-colors"
             >
               SOBRE NOSOTROS
-            </Link>
+            </Link> */}
             <Link
               href="/#clases"
               onClick={closeMenu}
@@ -79,13 +79,13 @@ export const Navbar = () => {
             >
               CLASES
             </Link>
-            <Link
+            {/* <Link
               href="/alquiler"
               onClick={closeMenu}
               className="text-2xl font-semibold text-[#1a1a1a] hover:text-primary transition-colors"
             >
               RENTAR ESTUDIO
-            </Link>
+            </Link> */}
           </div>
         </div>
       )}

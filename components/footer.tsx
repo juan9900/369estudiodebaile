@@ -9,8 +9,8 @@ export const Footer = () => {
               © {new Date().getFullYear()} Todos los derechos reservados.
             </p>
             <p className="text-white/80 text-sm mt-1">
-              Av. Las Delicias - entre calle 67A y 67B - edificio gredos, al
-              lado del restaurante piamonte y comercio &quot;Bipolar&quot;
+              Av. Las Delicias - entre calle 67A y 67B - edificio Gredos, al
+              lado del restaurante Piamonte y comercio &quot;Bipolar&quot;
             </p>
             <a
               href="mailto:info@369estudio.com"

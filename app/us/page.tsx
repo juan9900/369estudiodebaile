@@ -87,22 +87,19 @@ export default function NosotrosPage() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative py-20 px-6 bg-[#F5F5F0] overflow-hidden">
+      <section className="relative py-20 px-6 bg-primary overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center opacity-[0.06]">
-          <span className="text-[300px] md:text-[500px] font-black text-primary transform -rotate-12">
+          <span className="text-[300px] md:text-[500px] font-black text-white/50 transform -rotate-12">
             369
           </span>
         </div>
 
         <div className="container mx-auto relative z-10">
           <div className="max-w-4xl pt-12 pb-8">
-            <p className="text-primary font-bold text-sm uppercase tracking-widest mb-6">
-              Nuestra historia
-            </p>
-            <h1 className="text-5xl md:text-8xl font-black text-[#1a1a1a] leading-none">
+            <h1 className="text-5xl md:text-8xl font-black text-white leading-none">
               SOBRE
               <br />
-              <span className="text-primary">NOSOTROS</span>
+              <span className="text-white">NOSOTROS</span>
             </h1>
           </div>
         </div>
@@ -163,43 +160,8 @@ export default function NosotrosPage() {
         </div>
       </section>
 
-      {/* Values Section */}
-      <section className="py-20 px-6 bg-[#F5F5F0]">
-        <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-primary font-bold text-sm uppercase tracking-widest mb-4">
-              Lo que nos define
-            </p>
-            <h2 className="text-5xl md:text-7xl font-black text-[#1a1a1a] leading-none">
-              NUESTROS
-              <br />
-              <span className="text-primary">VALORES</span>
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {VALUES.map((value) => (
-              <div
-                key={value.title}
-                className="group bg-white rounded-2xl p-8 hover:bg-primary transition-colors duration-300"
-              >
-                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-white/20 transition-colors duration-300">
-                  <value.icon className="w-7 h-7 text-primary group-hover:text-white transition-colors duration-300" />
-                </div>
-                <h3 className="text-2xl font-black text-[#1a1a1a] mb-3 group-hover:text-white transition-colors duration-300">
-                  {value.title}
-                </h3>
-                <p className="text-[#1a1a1a]/70 leading-relaxed group-hover:text-white/80 transition-colors duration-300">
-                  {value.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Gallery Section */}
-      <section className="py-20 px-6 bg-white">
+      {/* <section className="py-20 px-6 bg-white">
         <div className="container mx-auto">
           <div className="mb-12">
             <h2 className="text-5xl md:text-7xl font-black text-[#1a1a1a] leading-none">
@@ -224,75 +186,7 @@ export default function NosotrosPage() {
             ))}
           </div>
         </div>
-      </section>
-
-      {/* Team Section */}
-      <section className="py-20 px-6 bg-[#F5F5F0]">
-        <div className="container mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-            {/* Image placeholder */}
-            <div className="relative h-[400px] order-2 md:order-1">
-              <div className="absolute inset-0 rounded-2xl overflow-hidden bg-gradient-to-br from-[#1a1a1a] to-primary/80 flex items-center justify-center">
-                <span className="text-white/30 text-xl font-bold">
-                  NUESTRO EQUIPO
-                </span>
-              </div>
-            </div>
-
-            <div className="order-1 md:order-2">
-              <p className="text-primary font-bold text-sm uppercase tracking-widest mb-4">
-                El equipo
-              </p>
-              <h2 className="text-4xl md:text-5xl font-black text-[#1a1a1a] mb-8 leading-tight">
-                INSTRUCTORES
-                <br />
-                <span className="text-primary">APASIONADOS</span>
-              </h2>
-              <p className="text-lg text-[#1a1a1a] leading-relaxed mb-6">
-                Nuestro equipo de instructores combina años de experiencia
-                profesional con una dedicación inquebrantable a la enseñanza.
-                Cada uno aporta su estilo único y su energía contagiosa a cada
-                clase.
-              </p>
-              <p className="text-lg text-[#1a1a1a]/70 leading-relaxed">
-                Desde salsa y bachata hasta danza contemporánea y urbana,
-                nuestros profesores están comprometidos con tu crecimiento como
-                bailarín y como persona.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-6 bg-primary relative overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center opacity-10">
-          <span className="text-[300px] md:text-[400px] font-black text-white transform rotate-12">
-            369
-          </span>
-        </div>
-
-        <div className="container mx-auto relative z-10 text-center">
-          <h2 className="text-5xl md:text-7xl font-black text-white mb-6 leading-none">
-            TU LUGAR EN
-            <br />
-            LA PISTA
-          </h2>
-          <p className="text-xl text-white/80 max-w-2xl mx-auto mb-10 leading-relaxed">
-            No importa si nunca has bailado o si llevas años haciéndolo. En
-            Estudio 369, hay un espacio reservado para ti.
-          </p>
-          <div className="flex flex-col md:flex-row gap-4 justify-center">
-            <Link
-              href="/#clases"
-              className="inline-flex items-center justify-center gap-2 bg-white text-primary font-bold px-8 py-3 rounded-lg hover:bg-white/90 transition-colors"
-            >
-              VER CLASES
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-          </div>
-        </div>
-      </section>
+      </section> */}
 
       <Footer />
     </>

@@ -583,7 +583,6 @@ export function ClassForm({ initialData }: ClassFormProps) {
         <div className="grid grid-cols-2 gap-6">
           {(
             [
-              { field: "image_url", label: "Imagen de la clase" },
               {
                 field: "instructor_photo_url",
                 label: "Foto del instructor",

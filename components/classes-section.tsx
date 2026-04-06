@@ -6,7 +6,7 @@ const CATEGORIES = [
     href: "/modalidades/clases",
     title: "Clases",
     description: "Aprende, graba, sorpréndete.",
-    accent: "from-primary/90 to-primary/70",
+    accent: "from-[#1a1a1a]/90 to-[#1a1a1a]/70",
   },
   {
     href: "/modalidades/masterclass",
@@ -20,7 +20,7 @@ const CATEGORIES = [
     title: "Proyectos",
     description:
       "Diseñamos experiencias temporales con un objetivo claro: que te sumerjas de lleno y vivas momentos inolvidables.",
-    accent: "from-primary/90 to-[#1a1a1a]/80",
+    accent: "from-[#1a1a1a]/90 to-[#1a1a1a]/70",
   },
 ] as const;
 
