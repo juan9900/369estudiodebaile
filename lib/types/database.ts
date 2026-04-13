@@ -39,6 +39,7 @@ export interface DanceClass {
   song_youtube_url: string | null;
   class_type: "clases" | "masterclass" | "proyectos";
   instructor_instagram_url: string | null;
+  use_genre_as_title: boolean;
 }
 
 export type RegistrationStatus = "pending" | "confirmed" | "cancelled";

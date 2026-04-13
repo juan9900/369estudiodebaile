@@ -4,6 +4,7 @@ import { useState } from "react";
 import { DanceClass } from "@/lib/types/database";
 import { CheckoutForm } from "./checkout-form";
 import { formatDate } from "../classes-carousel";
+import { getClassDisplayTitle } from "@/lib/utils/class-display";
 
 const titles = {
   clases: "Clase",
@@ -28,8 +29,10 @@ export default function CheckOutContainer({
       {step !== 3 && (
         <div className="text-center mb-8">
           <h1 className="text-7xl font-black uppercase text-white mb-1">
-            <span className="text-3xl block">{title} de:</span>{" "}
-            {danceClass.genre}
+            {danceClass.use_genre_as_title && (
+              <span className="text-3xl block">{title} de:</span>
+            )}{" "}
+            {getClassDisplayTitle(danceClass)}
           </h1>
           <h2 className="text-white text-xl font-bol">
             {danceClass.instructor}

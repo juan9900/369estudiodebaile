@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { getClassDisplayTitle } from "@/lib/utils/class-display";
 
 interface ClassDetailHeroProps {
   danceClass: DanceClass;
@@ -29,9 +30,7 @@ export function ClassDetailHero({ danceClass }: ClassDetailHeroProps) {
         <div className="container mx-auto max-w-4xl">
           {/* Title */}
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-white mb-4 leading-tight uppercase">
-            {danceClass.class_type !== "clases"
-              ? danceClass.title
-              : danceClass.genre}
+            {getClassDisplayTitle(danceClass)}
           </h1>
 
           {/* Description */}

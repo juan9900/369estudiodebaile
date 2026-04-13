@@ -62,6 +62,7 @@ export function ClassForm({ initialData }: ClassFormProps) {
     song_title: initialData?.song_title ?? "",
     song_artist: initialData?.song_artist ?? "",
     song_youtube_url: initialData?.song_youtube_url ?? "",
+    use_genre_as_title: initialData?.use_genre_as_title ?? true,
   });
 
   const [openingTime, setOpeningTime] = useState("08:00");
@@ -207,6 +208,7 @@ export function ClassForm({ initialData }: ClassFormProps) {
       song_title: form.song_title || null,
       song_artist: form.song_artist || null,
       song_youtube_url: form.song_youtube_url || null,
+      use_genre_as_title: form.use_genre_as_title,
     };
 
     try {
@@ -566,6 +568,20 @@ export function ClassForm({ initialData }: ClassFormProps) {
           </div>
         </div>
       </div>
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="use_genre_as_title"
+          name="use_genre_as_title"
+          checked={form.use_genre_as_title}
+          onChange={handleChange}
+          className="rounded"
+        />
+        <Label htmlFor="use_genre_as_title">
+          Usar género como título (en tarjetas y detalle)
+        </Label>
+      </div>
+
       <div className="flex items-center gap-2">
         <input
           type="checkbox"

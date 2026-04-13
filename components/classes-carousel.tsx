@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { DanceClass } from "@/lib/types/database";
 import { Button } from "./ui/button";
 import { Calendar, ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { getClassDisplayTitle } from "@/lib/utils/class-display";
 
 function formatTime(time: string) {
   const [h, m] = time.split(":").map(Number);
@@ -146,7 +147,7 @@ export function ClassesCarousel({ classType }: ClassesCarouselProps) {
                   <div className=""></div>
                   <div className="flex flex-col gap-3">
                     <h3 className="text-4xl font-black text-primary text-center uppercase ">
-                      {cls.class_type === "clases" ? cls.genre : cls.title}
+                      {getClassDisplayTitle(cls)}
                     </h3>
 
                     <div className="flex flex-row items-center justify-between relative z-10 text-primary uppercase font-bold py-2 rounded-md text-2xl  w-4/5 mx-auto ">

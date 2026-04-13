@@ -6,6 +6,7 @@ import CheckOutContainer from "@/components/checkout/checkout-container";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { getClassDisplayTitle } from "@/lib/utils/class-display";
 
 export default async function CheckoutPage({
   params,
@@ -52,7 +53,7 @@ export default async function CheckoutPage({
       <div className="min-h-screen bg-primary flex items-center justify-center px-6">
         <div className="max-w-md w-full text-center">
           <h1 className="text-3xl font-black text-white mb-3">
-            {danceClass.title}
+            {getClassDisplayTitle(danceClass)}
           </h1>
           <p className="text-white/70">
             Esta clase ya está llena. Por favor, elige otra clase.
