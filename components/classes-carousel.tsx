@@ -73,9 +73,11 @@ export function ClassesCarousel({ classType }: ClassesCarouselProps) {
   function scroll(dir: "left" | "right") {
     const el = scrollRef.current;
     if (!el) return;
-    const cardWidth = el.querySelector("a")?.offsetWidth ?? 300;
+    const cards = el.querySelectorAll<HTMLElement>(":scope > a");
+    if (cards.length < 2) return;
+    const scrollAmount = cards[1].offsetLeft - cards[0].offsetLeft;
     el.scrollBy({
-      left: dir === "left" ? -cardWidth : cardWidth,
+      left: dir === "left" ? -scrollAmount : scrollAmount,
       behavior: "smooth",
     });
   }
@@ -112,7 +114,7 @@ export function ClassesCarousel({ classType }: ClassesCarouselProps) {
         </div>
 
         {loading ? (
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
@@ -129,13 +131,13 @@ export function ClassesCarousel({ classType }: ClassesCarouselProps) {
           <div
             ref={scrollRef}
             onScroll={checkScroll}
-            className="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex   overflow-x-auto scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {classes.map((cls) => (
               <Link
                 key={cls.id}
                 href={`/modalidades/${cls.id}`}
-                className="group relative h-96 rounded-lg overflow-hidden flex-none flex flex-col justify-between p-6 snap-start
+                className="group relative h-96 rounded-lg overflow-hidden flex-none flex flex-col justify-between p-6 snap-start mx-3
                   w-full
                   md:w-[calc(50%-12px)]
                   lg:w-[calc(33.333%-16px)]"

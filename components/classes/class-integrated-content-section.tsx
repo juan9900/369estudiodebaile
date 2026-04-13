@@ -251,7 +251,7 @@ export function ClassIntegratedContentSection({
 
           {/* RIGHT: Video */}
           <div className="lg:w-2/5  rounded-2xl p-6 shadow-[0px_0px_5px_rgba(0,0,0,0.10)] transition-transform ">
-            {hasVideo && (
+            {hasVideo ? (
               <div>
                 <div className="mb-4">
                   <h3 className="inline-flex items-center gap-2 text-2xl font-black text-gray-900 uppercase">
@@ -278,6 +278,15 @@ export function ClassIntegratedContentSection({
                     title="Coreografía"
                   />
                 </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <h3 className="inline-flex items-center gap-2 text-2xl font-black text-gray-900 uppercase">
+                  Coreografía
+                </h3>
+                <p className="text-sm text-gray-500 mt-2">
+                  No hay video de coreografía disponible aún
+                </p>
               </div>
             )}
           </div>

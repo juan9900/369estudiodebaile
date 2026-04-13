@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { formatTimeAMPM } from "@/lib/utils/time-slots";
 import type { DanceClass } from "@/lib/types/database";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -100,8 +101,8 @@ export function ClassCtaSection({ danceClass }: ClassCtaSectionProps) {
                     Horario
                   </p>
                   <p className="text-gray-900 font-black truncate">
-                    {danceClass.start_time.slice(0, 5)} -{" "}
-                    {danceClass.end_time.slice(0, 5)}
+                    {formatTimeAMPM(danceClass.start_time)} -{" "}
+                    {formatTimeAMPM(danceClass.end_time)}
                   </p>
                 </div>
               </div>

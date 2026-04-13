@@ -75,7 +75,7 @@ export async function updateSession(request: NextRequest) {
     if (profile?.role !== "admin") {
       console.log({ role: profile?.role });
       const url = request.nextUrl.clone();
-      url.pathname = "/dashboard";
+      url.pathname = "/";
       return NextResponse.redirect(url);
     }
   }
