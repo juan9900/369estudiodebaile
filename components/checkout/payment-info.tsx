@@ -11,8 +11,8 @@ const PAYMENT_DETAILS: Record<
   },
   bs: {
     label: "Bolivares",
-    info: "Banco XYZ – Cédula: 28137184 - Tlf: 0424-6023604",
-    accountHolder: "Juan Lauretta",
+    info: "BNC – Cédula: 28090094 - Tlf: 04246257045",
+    accountHolder: "Cynthia González",
   },
   zelle: {
     label: "Zelle",

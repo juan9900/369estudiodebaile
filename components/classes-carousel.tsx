@@ -131,7 +131,7 @@ export function ClassesCarousel({ classType }: ClassesCarouselProps) {
           <div
             ref={scrollRef}
             onScroll={checkScroll}
-            className="flex   overflow-x-auto scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex  overflow-x-auto scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {classes.map((cls) => (
               <Link
