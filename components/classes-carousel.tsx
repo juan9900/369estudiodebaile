@@ -52,7 +52,19 @@ export function ClassesCarousel({ classType }: ClassesCarouselProps) {
           current_enrollment:
             (c.registrations as { count: number }[])?.[0]?.count ?? 0,
         })) as DanceClass[];
-        setClasses(mapped.filter((c) => c.current_enrollment < c.max_capacity));
+        const now = new Date();
+        setClasses(
+          mapped.filter((c) => {
+            if (c.current_enrollment >= c.max_capacity) return false;
+            if (c.scheduled_date === today) {
+              const [hours, minutes, seconds] = c.start_time.split(":").map(Number);
+              const classStart = new Date();
+              classStart.setHours(hours, minutes, seconds ?? 0, 0);
+              return classStart > now;
+            }
+            return true;
+          })
+        );
       }
       setLoading(false);
     }
