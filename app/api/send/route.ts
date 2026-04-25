@@ -13,6 +13,7 @@ const templates: Record<
   {
     subject: string;
     component: (props: any) => React.ReactNode;
+    to?: string | string[];
   }
 > = {
   clientStatusChange: {
@@ -22,6 +23,7 @@ const templates: Record<
   adminClientRegistered: {
     subject: "Nueva inscripción recibida",
     component: EmailAdminRegister,
+    to: ["juanluislauretta@gmail.com", "Estudiodebaile369@gmail.com"],
   },
 };
 
@@ -44,7 +46,7 @@ export async function POST(req: Request) {
 
       const { data, error } = await resend.emails.send({
         from: "info@369estudio.com",
-        to: toEmail ?? "juanluislauretta@gmail.com",
+        to: toEmail ?? config.to ?? "juanluislauretta@gmail.com",
         subject: config.subject,
         react: config.component(payload),
       });

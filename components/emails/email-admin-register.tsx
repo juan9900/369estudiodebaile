@@ -82,7 +82,7 @@ export default function EmailAdminRegister({
 
       <div style={{ marginTop: "20px" }}>
         <a
-          href="https://tu-admin-url.com"
+          href="https://369estudio.com/admin/inscripciones"
           style={{
             backgroundColor: "#2980b9",
             color: "white",
