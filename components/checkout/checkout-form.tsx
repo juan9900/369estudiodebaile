@@ -50,9 +50,6 @@ export function CheckoutForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isClassDay =
-    danceClass.scheduled_date === new Date().toISOString().slice(0, 10);
-
   // Contact validation
   const contactValid =
     name.trim() &&
@@ -72,12 +69,7 @@ export function CheckoutForm({
       );
     if (paymentMethod === "binance")
       return reference.trim().length > 0 && paymentEmail.trim().includes("@");
-    if (paymentMethod === "bs")
-      return (
-        reference.trim().length > 0 &&
-        cedula.trim().length > 0 &&
-        titular.trim().length > 0
-      );
+    if (paymentMethod === "bs") return true;
     return false;
   })();
 
@@ -161,6 +153,8 @@ export function CheckoutForm({
     let extraNotes: string;
     if (paymentMethod === "efectivo") {
       extraNotes = "Pago completo en efectivo en estudio";
+    } else if (paymentMethod === "bs") {
+      extraNotes = "Pago en bolívares el día de la clase";
     } else {
       extraNotes = [
         titular.trim() && `Titular: ${titular.trim()}`,
@@ -176,7 +170,7 @@ export function CheckoutForm({
       status: "pending",
       payment_method: paymentMethod,
       transaction_id:
-        paymentMethod === "efectivo" ? null : reference.trim(),
+        paymentMethod === "efectivo" || paymentMethod === "bs" ? null : reference.trim(),
       notes: extraNotes || null,
       contact_name: name.trim(),
       contact_lastname: lastname.trim(),
@@ -222,6 +216,12 @@ export function CheckoutForm({
           Se envió un resumen a{" "}
           <span className="text-white/80">{email.trim()}</span>.
         </p>
+
+        {paymentMethod === "bs" && (
+          <p className="text-yellow-300 text-sm mt-4 font-semibold">
+            Recuerda que el pago en bolívares debe realizarse el día de la clase. ¡Tu cupo está asegurado!
+          </p>
+        )}
 
         <Link href={`/`}>
           <Button className="mt-5 bg-white  text-primary hover:bg-gray-100 font-black text-base h-12 px-8 group shadow-lg hover:shadow-xl transition-all">
@@ -332,46 +332,32 @@ export function CheckoutForm({
 
       {/* Payment method radio buttons */}
       <div className="grid grid-cols-2 gap-3">
-        {PAYMENT_OPTIONS.map((opt) => {
-          const isBsDisabled = opt.value === "bs" && !isClassDay;
-          return (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={
-                isBsDisabled
-                  ? undefined
-                  : () => setPaymentMethod(opt.value)
-              }
-              className={[
-                "rounded-lg border p-3 text-left transition-colors",
-                isBsDisabled
-                  ? "bg-white text-primary/40 font-bold opacity-50 cursor-not-allowed"
-                  : paymentMethod === opt.value
-                    ? "border-primary-dark bg-primary-dark text-white font-bold"
-                    : "bg-white text-primary hover:bg-gray-200 font-bold",
-              ].join(" ")}
-            >
-              <span
-                className="inline-block w-4 h-4 rounded-full border-2 mr-2 align-middle"
-                style={{
-                  borderColor: paymentMethod === opt.value ? "#fff" : "#6c1717",
-                  background: "#fff",
-                }}
-              />
-              {opt.label}
-              {isBsDisabled && (
-                <span className="block text-xs  mt-1 leading-tight text-primary-darker font-bold">
-                  Disponible solo el día de la clase
-                </span>
-              )}
-            </button>
-          );
-        })}
+        {PAYMENT_OPTIONS.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => setPaymentMethod(opt.value)}
+            className={[
+              "rounded-lg border p-3 text-left transition-colors",
+              paymentMethod === opt.value
+                ? "border-primary-dark bg-primary-dark text-white font-bold"
+                : "bg-white text-primary hover:bg-gray-200 font-bold",
+            ].join(" ")}
+          >
+            <span
+              className="inline-block w-4 h-4 rounded-full border-2 mr-2 align-middle"
+              style={{
+                borderColor: paymentMethod === opt.value ? "#fff" : "#6c1717",
+                background: "#fff",
+              }}
+            />
+            {opt.label}
+          </button>
+        ))}
       </div>
 
       {/* Payment details / efectivo sub-flow */}
-      {paymentMethod && paymentMethod !== "efectivo" && (
+      {paymentMethod && paymentMethod !== "efectivo" && paymentMethod !== "bs" && (
         <PaymentInfo
           method={paymentMethod}
           euroRate={euroRate}
@@ -462,43 +448,11 @@ export function CheckoutForm({
       )}
 
       {paymentMethod === "bs" && (
-        <div className="space-y-4">
-          <div className="space-y-1">
-            <Label htmlFor="checkout-ref" className="text-white/80">
-              Número de referencia
-            </Label>
-            <Input
-              id="checkout-ref"
-              placeholder="REF-xxxxxxxxx"
-              value={reference}
-              onChange={(e) => setReference(e.target.value)}
-              className="bg-white text-primary placeholder:text-gray-400 py-5"
-            />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="checkout-cedula" className="text-white/80">
-              Cédula
-            </Label>
-            <Input
-              id="checkout-cedula"
-              placeholder="V-12345678"
-              value={cedula}
-              onChange={(e) => setCedula(e.target.value)}
-              className="bg-white text-primary placeholder:text-gray-400 py-5"
-            />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="checkout-titular" className="text-white/80">
-              Titular
-            </Label>
-            <Input
-              id="checkout-titular"
-              placeholder="Nombre del titular"
-              value={titular}
-              onChange={(e) => setTitular(e.target.value)}
-              className="bg-white text-primary placeholder:text-gray-400 py-5"
-            />
-          </div>
+        <div className="rounded-lg border bg-white p-4">
+          <p className="text-sm font-bold uppercase text-textColor mb-1">Pago en bolívares</p>
+          <p className="text-textColor text-sm">
+            El pago en bolívares se realiza el día de la clase. Tu cupo quedará asegurado al completar el registro.
+          </p>
         </div>
       )}
 
