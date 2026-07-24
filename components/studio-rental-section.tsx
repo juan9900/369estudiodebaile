@@ -1,21 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Maximize2, Music, Sparkles } from "lucide-react";
-
-const HIGHLIGHTS = [
-  {
-    icon: Maximize2,
-    label: "80m² de espacio",
-  },
-  {
-    icon: Music,
-    label: "Sonido profesional",
-  },
-  {
-    icon: Sparkles,
-    label: "Piso de madera",
-  },
-];
+import { ArrowRight } from "lucide-react";
 
 export function StudioRentalSection() {
   return (
@@ -46,19 +31,6 @@ export function StudioRentalSection() {
               para ensayos de danza, sesiones fotográficas, grabaciones de
               video, talleres y eventos privados.
             </p>
-
-            <div className="flex flex-wrap gap-6 mb-10">
-              {HIGHLIGHTS.map((item) => (
-                <div key={item.label} className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                    <item.icon className="w-5 h-5 text-primary" />
-                  </div>
-                  <span className="text-white/80 font-medium text-sm">
-                    {item.label}
-                  </span>
-                </div>
-              ))}
-            </div>
 
             <Link
               href="/alquiler"

@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
-  Maximize2,
   Music,
   Lamp,
   Wind,
@@ -20,13 +19,6 @@ import { Footer } from "@/components/footer";
 import { StudioRentalGallery } from "@/components/studio-rental-gallery";
 
 const FEATURES = [
-  {
-    icon: Maximize2,
-    value: "ESPACIO",
-    label: "Área total",
-    description:
-      "Amplio espacio de 7.40m x 4.27m (34m²) para cualquier actividad",
-  },
   {
     icon: RectangleVertical,
     value: "VISIÓN",
