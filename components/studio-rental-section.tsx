@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Maximize2, Music, Sparkles } from "lucide-react";
 
@@ -68,12 +69,16 @@ export function StudioRentalSection() {
             </Link>
           </div>
 
-          {/* Image placeholder */}
+          {/* Studio image */}
           <div className="relative h-[400px] md:h-[500px]">
-            <div className="absolute inset-0 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-[#571327] flex items-center justify-center">
-              <span className="text-white/30 text-xl font-bold">
-                ESTUDIO 369
-              </span>
+            <div className="absolute inset-0 rounded-2xl overflow-hidden">
+              <Image
+                src="/images/studio-rental-hero.webp"
+                alt="Estudio 369 - espacio disponible para alquiler"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
             </div>
             {/* Decorative offset border */}
             <div className="absolute -bottom-4 -right-4 w-full h-full rounded-2xl border-2 border-primary/30 -z-10" />

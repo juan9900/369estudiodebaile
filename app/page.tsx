@@ -14,6 +14,7 @@ export default function Home() {
       <Hero />
       <Marquee />
       <ClassesSection />
+      <StudioRentalSection />
 
       <Footer />
     </>

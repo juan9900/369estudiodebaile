@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -10,13 +11,13 @@ import {
   TreePine,
   MapPin,
   Clock,
-  Armchair,
   AlertCircle,
   UtensilsCrossed,
   Droplets,
 } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
+import { StudioRentalGallery } from "@/components/studio-rental-gallery";
 
 const FEATURES = [
   {
@@ -73,27 +74,27 @@ const FEATURES = [
 const GALLERY = [
   {
     label: "VISTA GENERAL",
-    gradient: "from-primary to-[#6d1730]",
+    image: "/images/studio-rental-vista-general.webp",
     className: "col-span-2 h-[300px]",
   },
   {
     label: "ESPEJOS",
-    gradient: "from-[#6d1730] to-[#571327]",
+    image: "/images/studio-rental-espejos.webp",
     className: "col-span-1 h-[300px]",
   },
   {
-    label: "SISTEMA DE SONIDO",
-    gradient: "from-[#1a1a1a] to-primary/80",
+    label: "DETALLE DEL ESPACIO",
+    image: "/images/studio-rental-detalle.webp",
     className: "col-span-1 h-[250px]",
   },
   {
     label: "PISO PROFESIONAL",
-    gradient: "from-[#571327] to-primary",
+    image: "/images/studio-rental-piso.webp",
     className: "col-span-1 h-[250px]",
   },
   {
-    label: "ILUMINACIÓN",
-    gradient: "from-primary/80 to-[#1a1a1a]",
+    label: "ÁREA DE RESGUARDO",
+    image: "/images/studio-rental-resguardo.webp",
     className: "col-span-1 h-[250px]",
   },
 ];
@@ -112,13 +113,6 @@ const PRACTICAL_INFO = [
     value: "7AM – 7PM",
     description:
       "Disponible todos los días de 7:00 AM a 7:00 PM para tu comodidad.",
-  },
-  {
-    icon: Armchair,
-    label: "INCLUYE",
-    value: "10 SILLAS",
-    description:
-      "10 sillas plásticas disponibles para tus talleres, clases o eventos.",
   },
 ];
 
@@ -210,12 +204,16 @@ export default function AlquilerPage() {
               </p>
             </div>
 
-            {/* Image placeholder */}
+            {/* Studio image */}
             <div className="relative h-[450px]">
-              <div className="absolute inset-0 rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-[#571327] flex items-center justify-center">
-                <span className="text-white/30 text-xl font-bold">
-                  ESPACIO PROFESIONAL
-                </span>
+              <div className="absolute inset-0 rounded-2xl overflow-hidden">
+                <Image
+                  src="/images/studio-rental-hero.webp"
+                  alt="Espacio profesional del Estudio 369"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
               </div>
               <div className="absolute -bottom-4 -right-4 w-full h-full rounded-2xl border-2 border-primary/20 -z-10" />
             </div>
@@ -237,11 +235,11 @@ export default function AlquilerPage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="flex flex-wrap justify-center gap-6">
             {FEATURES.map((feature) => (
               <div
                 key={feature.label}
-                className="bg-white rounded-2xl p-8 text-center group  transition-colors duration-300"
+                className="bg-white rounded-2xl p-8 text-center group transition-colors duration-300 w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)]"
               >
                 <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors duration-300">
                   <feature.icon className="w-7 h-7 text-primary" />
@@ -275,7 +273,7 @@ export default function AlquilerPage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
             {PRACTICAL_INFO.map((item) => (
               <div
                 key={item.label}
@@ -311,19 +309,7 @@ export default function AlquilerPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {GALLERY.map((item) => (
-              <div
-                key={item.label}
-                className={`${item.className} rounded-2xl overflow-hidden bg-gradient-to-br ${item.gradient} flex items-center justify-center group cursor-pointer relative`}
-              >
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-                <span className="text-white/40 text-lg font-bold group-hover:text-white/80 transition-colors duration-300 relative z-10">
-                  {item.label}
-                </span>
-              </div>
-            ))}
-          </div>
+          <StudioRentalGallery items={GALLERY} />
         </div>
       </section>
 

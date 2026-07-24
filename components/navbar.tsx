@@ -32,12 +32,12 @@ export const Navbar = () => {
           >
             CLASES
           </Link>
-          {/* <Link
+          <Link
             href="/alquiler"
             className="text-sm font-semibold text-[#1a1a1a] hover:text-primary transition-colors"
           >
             RENTAR ESTUDIO
-          </Link> */}
+          </Link>
         </div>
 
         {/* Mobile Hamburger Button */}
@@ -79,13 +79,13 @@ export const Navbar = () => {
             >
               CLASES
             </Link>
-            {/* <Link
+            <Link
               href="/alquiler"
               onClick={closeMenu}
               className="text-2xl font-semibold text-[#1a1a1a] hover:text-primary transition-colors"
             >
               RENTAR ESTUDIO
-            </Link> */}
+            </Link>
           </div>
         </div>
       )}
