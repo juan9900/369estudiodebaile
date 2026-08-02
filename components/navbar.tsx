@@ -1,94 +1,135 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
-import { Button } from "./ui/button";
+import { usePathname } from "next/navigation";
+import { Menu, X, ChevronRight, Instagram } from "lucide-react";
+import { gsap } from "gsap";
 import { useMobileMenu } from "@/lib/hooks/use-mobile-menu";
 
+const NAV_LINKS = [
+  { href: "/", label: "Inicio" },
+  { href: "/modalidades/classes", label: "Clases" },
+  { href: "/alquiler", label: "Rentar estudio" },
+];
+
+function isActive(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname.startsWith(href);
+}
+
 export const Navbar = () => {
+  const pathname = usePathname();
   const { isOpen, toggle: toggleMenu, close: closeMenu } = useMobileMenu();
+  const panelRef = useRef<HTMLDivElement>(null);
+  const onAlquiler = pathname.startsWith("/alquiler");
+  const ctaLabel = onAlquiler ? "Consultar" : "Reservar";
+  const ctaHref = onAlquiler ? "#contacto" : "/modalidades/classes";
+
+  useEffect(() => {
+    const el = panelRef.current;
+    if (!el) return;
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      el.style.height = isOpen ? "auto" : "0px";
+      el.style.opacity = isOpen ? "1" : "0";
+      return;
+    }
+
+    if (isOpen) {
+      const height = el.scrollHeight;
+      gsap.fromTo(
+        el,
+        { height: 0, opacity: 0 },
+        {
+          height,
+          opacity: 1,
+          duration: 0.18,
+          ease: "power2.out",
+          onComplete: () => {
+            el.style.height = "auto";
+          },
+        },
+      );
+    } else {
+      gsap.to(el, { height: 0, opacity: 0, duration: 0.18, ease: "power2.out" });
+    }
+  }, [isOpen]);
 
   return (
-    <nav className="w-full bg-white border-b border-gray-200">
-      <div className="container mx-auto flex justify-end items-center py-4 px-6">
-        {/* Desktop Navigation */}
+    <nav className="relative w-full bg-white border-b border-line">
+      <div className="flex items-center justify-between px-5 py-[15px] md:h-20 md:px-16 md:py-0">
+        {/* Logo */}
+        <Link href="/" className="flex items-baseline" onClick={closeMenu}>
+          <span className="font-archivo text-[22px] md:text-[28px] font-black text-vino tracking-[-0.045em]">
+            369
+          </span>
+        </Link>
 
-        <div className="hidden md:flex items-center gap-8">
+        {/* Right side — CTA + menu toggle (all breakpoints) */}
+        <div className="flex items-center gap-3.5 md:gap-6">
           <Link
-            href="/"
-            className="text-sm font-semibold text-[#1a1a1a] hover:text-primary transition-colors"
+            href={ctaHref}
+            className="text-[13px] font-bold text-vino md:rounded-sm md:bg-vino md:px-6 md:py-[13px] md:text-sm md:text-white md:hover:bg-vino-hover md:transition-colors"
           >
-            INICIO
+            {ctaLabel}
           </Link>
-          {/* <Link
-            href="/nosotros"
-            className="text-sm font-semibold text-[#1a1a1a] hover:text-primary transition-colors"
+          <button
+            onClick={toggleMenu}
+            className="text-ink"
+            aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
+            aria-expanded={isOpen}
           >
-            SOBRE NOSOTROS
-          </Link> */}
-          <Link
-            href="/#clases"
-            className="text-sm font-semibold text-[#1a1a1a] hover:text-primary transition-colors"
-          >
-            CLASES
-          </Link>
-          <Link
-            href="/alquiler"
-            className="text-sm font-semibold text-[#1a1a1a] hover:text-primary transition-colors"
-          >
-            RENTAR ESTUDIO
-          </Link>
+            {isOpen ? <X size={22} /> : <Menu size={24} />}
+          </button>
         </div>
-
-        {/* Mobile Hamburger Button */}
-        <button
-          onClick={toggleMenu}
-          className=" z-[99999] md:hidden text-[#1a1a1a] hover:text-primary transition-colors"
-          aria-label={isOpen ? "Close menu" : "Open menu"}
-          aria-expanded={isOpen}
-        >
-          {isOpen ? <X size={28} /> : <Menu size={28} />}
-        </button>
       </div>
 
-      {/* Mobile Full-Screen Overlay Menu */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-white md:hidden animate-in fade-in duration-200"
-          onClick={closeMenu}
-        >
-          <div className="flex flex-col items-center justify-center h-full gap-8">
-            <Link
-              href="/"
-              onClick={closeMenu}
-              className="text-2xl font-semibold text-[#1a1a1a] hover:text-primary transition-colors"
+      {/* Dropdown panel — the only navigation, animated open/close with GSAP */}
+      <div
+        ref={panelRef}
+        aria-hidden={!isOpen}
+        style={{ height: 0, opacity: 0, overflow: "hidden" }}
+        className="border-b border-line bg-white"
+      >
+        <div className="px-5 pt-3.5 pb-[18px] md:px-16 md:pt-5 md:pb-7">
+          <div className="flex flex-col md:max-w-sm">
+            {NAV_LINKS.map((link, i) => {
+              const active = isActive(pathname, link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={closeMenu}
+                  className={`flex items-center justify-between py-[13px] ${
+                    i > 0 ? "border-t border-line-soft" : ""
+                  } ${active ? "text-vino font-bold" : "text-ink font-semibold"} text-base`}
+                >
+                  {link.label}
+                  <ChevronRight
+                    size={17}
+                    className={active ? "text-vino" : "text-line-2"}
+                  />
+                </Link>
+              );
+            })}
+          </div>
+          <div className="mt-4 flex items-center justify-between">
+            <a
+              href="https://instagram.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram"
+              className="text-muted2-3"
             >
-              INICIO
-            </Link>
-            {/* <Link
-              href="/nosotros"
-              onClick={closeMenu}
-              className="text-2xl font-semibold text-[#1a1a1a] hover:text-primary transition-colors"
-            >
-              SOBRE NOSOTROS
-            </Link> */}
-            <Link
-              href="/#clases"
-              onClick={closeMenu}
-              className="text-2xl font-semibold text-[#1a1a1a] hover:text-primary transition-colors"
-            >
-              CLASES
-            </Link>
-            <Link
-              href="/alquiler"
-              onClick={closeMenu}
-              className="text-2xl font-semibold text-[#1a1a1a] hover:text-primary transition-colors"
-            >
-              RENTAR ESTUDIO
-            </Link>
+              <Instagram size={19} strokeWidth={1.75} />
+            </a>
+            <span className="font-mono text-[10px] tracking-[0.14em] text-muted2-3/80">
+              SÁB Y DOM
+            </span>
           </div>
         </div>
-      )}
+      </div>
     </nav>
   );
 };

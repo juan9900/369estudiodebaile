@@ -6,9 +6,9 @@ export default function classesLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
-      {children}
+    <div className="flex min-h-screen flex-col">
+      <div className="flex-1">{children}</div>
       <Footer />
-    </>
+    </div>
   );
 }

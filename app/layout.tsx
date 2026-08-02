@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { Montserrat, Inter } from "next/font/google";
+import { Montserrat, Inter, Archivo, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
-import { Footer } from "@/components/footer";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -26,6 +25,20 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+const archivo = Archivo({
+  variable: "--font-archivo",
+  display: "swap",
+  weight: ["400", "500", "600", "700", "800", "900"],
+  subsets: ["latin"],
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  variable: "--font-ibm-plex-mono",
+  display: "swap",
+  weight: ["400", "500"],
+  subsets: ["latin"],
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -33,7 +46,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`${montserrat.variable} ${inter.variable} antialiased`}>
+      <body
+        className={`${montserrat.variable} ${inter.variable} ${archivo.variable} ${ibmPlexMono.variable} antialiased`}
+      >
         {children}
 
         {/* Floating WhatsApp Button */}

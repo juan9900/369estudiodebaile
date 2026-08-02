@@ -25,6 +25,7 @@ interface DataTableProps<TData, TColumn> {
   pageCount: number;
   onPaginationChange: React.Dispatch<React.SetStateAction<PaginationState>>;
   onRowClick?: (row: TData) => void;
+  rowClassName?: (row: TData) => string;
   emptyMessage?: string;
 }
 
@@ -35,6 +36,7 @@ export function DataTable<TData, TColumn>({
   pageCount,
   onPaginationChange,
   onRowClick,
+  rowClassName,
   emptyMessage = "Sin resultados.",
 }: DataTableProps<TData, TColumn>) {
   const table = useReactTable({
@@ -72,7 +74,12 @@ export function DataTable<TData, TColumn>({
               <TableRow
                 key={row.id}
                 onClick={onRowClick ? () => onRowClick(row.original) : undefined}
-                className={onRowClick ? "cursor-pointer hover:bg-gray-50" : ""}
+                className={[
+                  onRowClick ? "cursor-pointer hover:bg-gray-50" : "",
+                  rowClassName ? rowClassName(row.original) : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>

@@ -39,11 +39,33 @@ export default {
       fontFamily: {
         montserrat: ["var(--font-montserrat)", "sans-serif"],
         inter: ["var(--font-inter)", "sans-serif"],
+        archivo: ["var(--font-archivo)", "sans-serif"],
+        mono: ["var(--font-ibm-plex-mono)", "monospace"],
       },
       colors: {
         textColor: {
           DEFAULT: "#222222",
         },
+        // Rediseño 2026 — paleta editorial (ver design_handoff_369_rediseno/README.md)
+        vino: {
+          DEFAULT: "#8E1C2E",
+          hover: "#6E1423",
+        },
+        ink: {
+          DEFAULT: "#16120F",
+          soft: "#38312E",
+        },
+        muted2: {
+          DEFAULT: "#57504C",
+          2: "#6B615D",
+          3: "#8A807B",
+        },
+        line: {
+          DEFAULT: "#E7E1DE",
+          soft: "#F0EBE8",
+          2: "#DCD5D1",
+        },
+        track: "#EDE7E4",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {

@@ -77,10 +77,44 @@ export const columns: ColumnDef<RegistrationWithClass>[] = [
     },
   },
   {
-    accessorKey: "classes.price",
+    id: "costo",
     header: "Costo",
     cell: ({ row }) => {
-      return `$${JSON.stringify(row.original.classes.price)}`;
+      const reg = row.original;
+      const amount = reg.paid_amount ?? reg.classes.price;
+      return amount != null ? `$${amount}` : "—";
+    },
+  },
+  {
+    id: "paquete",
+    header: "Paquete",
+    cell: ({ row }) => {
+      const pack = row.original.promo_pack;
+      return pack && pack > 1 ? (
+        <Badge className="bg-vino/10 text-vino hover:bg-vino/10 hover:text-vino">
+          Pack de {pack}
+        </Badge>
+      ) : (
+        <span className="text-gray-400">—</span>
+      );
+    },
+  },
+  {
+    accessorKey: "discount_applied",
+    header: "Descuento",
+    cell: ({ row }) => {
+      const discounted = row.original.discount_applied;
+      return (
+        <Badge
+          className={
+            discounted
+              ? "bg-green-100 text-green-800 hover:bg-green-100 hover:text-green-800"
+              : "bg-gray-100 text-gray-600 hover:bg-gray-100 hover:text-gray-600"
+          }
+        >
+          {discounted ? "Sí" : "No"}
+        </Badge>
+      );
     },
   },
   {

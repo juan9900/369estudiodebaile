@@ -115,6 +115,9 @@ export function RegistrationsTable({ classId }: RegistrationsTableProps) {
         pageCount={pageCount}
         onPaginationChange={setPagination}
         onRowClick={(row) => setSelectedReg(row)}
+        rowClassName={(reg) =>
+          reg.promo_pack && reg.promo_pack > 1 ? "border-l-4 border-l-vino" : ""
+        }
       />
       {totalCount > 0 && <DataTablePagination table={table} />}
 

@@ -1,5 +1,5 @@
 import { Navbar } from "@/components/navbar";
-import { ClassesCarousel } from "@/components/classes-carousel";
+import { ClassesList } from "@/components/classes-list";
 
 export const metadata = {
   title: "Proyectos | Estudio 369",
@@ -12,74 +12,24 @@ export default function ProyectosPage() {
     <>
       <Navbar />
 
-      {/* Hero */}
-      <section className="relative bg-[#F5F5F0] py-20 px-6 overflow-hidden border-b-2 border-primary">
-        <div className="absolute inset-0 flex items-center justify-center opacity-10">
-          <span className="text-[150px] md:text-[500px] font-black text-primary transform -rotate-12 lg:translate-x-20 lg:translate-y-10">
-            369
-          </span>
-        </div>
+      <section className="px-[22px] pt-[34px] pb-3 md:grid md:grid-cols-2 md:items-end md:gap-20 md:px-16 md:pt-24 md:pb-10">
+        <h1 className="font-archivo text-[56px] font-black leading-[0.9] tracking-[-0.04em] text-vino md:text-[104px]">
+          Proyectos
+        </h1>
 
-        <div className="container mx-auto relative z-10">
-          <div className="max-w-4xl">
-            <h1 className="text-4xl md:text-8xl font-black text-[#1a1a1a]  leading-none mb-5">
-              PROYECTOS
-              <span className="text-primary text-3xl lg:text-5xl block">
-                COREOGRÁFICOS
-              </span>
-            </h1>
-
-            <div className="flex items-start gap-4 mb-8">
-              <div className="lg:w-3/5">
-                <span className="block mt-5 text-2xl font-black uppercase pb-1">
-                  ¿Qué ofrecemos?
-                </span>
-
-                <ul className="list-none ">
-                  <li className="my-3">
-                    <span className="font-bold text-primary uppercase">
-                      Planes vacacionales:
-                    </span>{" "}
-                    Durante las vacaciones, clases diarias con dinámicas
-                    grupales y mucho movimiento. Ideal para quienes quieren
-                    mantenerse activos y aprender sin presión.
-                  </li>
-                  <li className="my-3">
-                    <span className="font-bold text-primary uppercase">
-                      Talleres intensivos:
-                    </span>{" "}
-                    Para capacitaciones breves y de alto enfoque diseñadas para
-                    desarrollar habilidades específicas o profundizar en temas
-                    concretos mediante un aprendizaje práctico e interactivo
-                  </li>
-                  <li className="my-3">
-                    <span className="font-bold text-primary uppercase">
-                      Programas especiales:
-                    </span>{" "}
-                    Proyectos con duración determinada donde trabajamos hacia un
-                    objetivo final
-                  </li>
-                </ul>
-              </div>
-              <div className="flex-shrink-0 mt-2 hidden lg:block">
-                <svg
-                  width="40"
-                  height="40"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#8B1E3F"
-                  strokeWidth="2"
-                >
-                  <path d="M7 7l10 10M7 7v10M7 7h10" />
-                </svg>
-              </div>
-            </div>
-          </div>
+        <div className="mt-4 flex flex-col gap-4 md:mt-0">
+          <p className="text-base leading-[1.55] text-ink-soft md:text-lg">
+            Planes vacacionales, talleres intensivos y programas especiales
+            con un objetivo final claro.
+          </p>
+          <p className="text-[15px] leading-[1.55] text-muted2 md:text-base">
+            Diseñamos experiencias temporales para que te sumerjas de lleno y
+            vivas momentos inolvidables.
+          </p>
         </div>
       </section>
 
-      {/* Carousel */}
-      <ClassesCarousel classType="proyectos" />
+      <ClassesList classType="proyectos" />
     </>
   );
 }

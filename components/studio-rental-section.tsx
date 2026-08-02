@@ -1,61 +1,40 @@
+"use client";
+
 import Image from "next/image";
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { LinkButton } from "@/components/ui/link-button";
+import { useScrollReveal } from "@/lib/hooks/use-scroll-reveal";
 
 export function StudioRentalSection() {
+  const revealRef = useScrollReveal<HTMLDivElement>({ stagger: true });
+
   return (
-    <section className="relative py-20 px-6 bg-[#1a1a1a] overflow-hidden">
-      {/* Decorative 369 watermark */}
-      <div className="absolute inset-0 flex items-center justify-end opacity-[0.04]">
-        <span className="text-[350px] md:text-[500px] font-black text-white transform translate-x-32">
-          369
-        </span>
+    <section
+      ref={revealRef}
+      className="px-[22px] pt-11 pb-[46px] md:grid md:grid-cols-[1fr_1.05fr] md:gap-16 md:px-16 md:py-24"
+    >
+      <div className="flex flex-col md:justify-center">
+        <h2 className="font-archivo text-[34px] md:text-[56px] font-black leading-[1] tracking-[-0.035em] text-vino">
+          Alquila
+          <br />
+          nuestro espacio
+        </h2>
+        <p className="mt-4 max-w-[420px] text-[15px] leading-[1.55] text-muted2 md:mt-6 md:text-lg">
+          Sala profesional para ensayos, sesiones de fotos, grabaciones y
+          eventos privados.
+        </p>
+        <LinkButton href="/alquiler" variant="outline" className="mt-5 w-fit md:mt-6">
+          Consultar disponibilidad
+        </LinkButton>
       </div>
 
-      <div className="container mx-auto relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          {/* Text content */}
-          <div>
-            <p className="text-primary font-bold text-sm uppercase tracking-widest mb-4">
-              Espacio disponible
-            </p>
-            <h2 className="text-5xl md:text-7xl font-black text-white mb-8 leading-none">
-              ALQUILA
-              <br />
-              NUESTRO
-              <br />
-              <span className="text-primary">ESPACIO</span>
-            </h2>
-            <p className="text-lg text-white/70 leading-relaxed mb-8 max-w-lg">
-              Nuestro estudio profesional está disponible para alquiler. Ideal
-              para ensayos de danza, sesiones fotográficas, grabaciones de
-              video, talleres y eventos privados.
-            </p>
-
-            <Link
-              href="/alquiler"
-              className="inline-flex items-center gap-2 bg-primary text-white font-bold px-8 py-3 rounded-lg hover:bg-primary-dark transition-colors"
-            >
-              VER MÁS
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-          </div>
-
-          {/* Studio image */}
-          <div className="relative h-[400px] md:h-[500px]">
-            <div className="absolute inset-0 rounded-2xl overflow-hidden">
-              <Image
-                src="/images/studio-rental-hero.webp"
-                alt="Estudio 369 - espacio disponible para alquiler"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
-            </div>
-            {/* Decorative offset border */}
-            <div className="absolute -bottom-4 -right-4 w-full h-full rounded-2xl border-2 border-primary/30 -z-10" />
-          </div>
-        </div>
+      <div className="relative mt-5 h-[210px] overflow-hidden rounded-lg md:mt-0 md:h-[420px]">
+        <Image
+          src="/images/studio-rental-hero.webp"
+          alt="Estudio 369 — espacio disponible para alquiler"
+          fill
+          className="object-cover"
+          sizes="(max-width: 767px) 100vw, 50vw"
+        />
       </div>
     </section>
   );

@@ -8,6 +8,7 @@ import {
   FileText,
   ImageIcon,
   Settings,
+  Tag,
 } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
@@ -32,6 +33,7 @@ export const adminLinks: DashboardLink[] = [
   { href: "/admin", label: "Panel Admin", icon: LayoutDashboard },
   { href: "/admin/clases", label: "Clases", icon: GraduationCap },
   { href: "/admin/inscripciones", label: "Inscripciones", icon: FileText },
+  { href: "/admin/promo-packs", label: "Paquetes", icon: Tag },
   { href: "/admin/users", label: "Usuarios", icon: Users },
   { href: "/admin/media", label: "Medios", icon: ImageIcon },
   { href: "/admin/settings", label: "Ajustes", icon: Settings },

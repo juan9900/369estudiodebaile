@@ -1,68 +1,38 @@
 import { Navbar } from "@/components/navbar";
-import { ClassesCarousel } from "@/components/classes-carousel";
+import { ClassesList } from "@/components/classes-list";
 
 export const metadata = {
-  title: "Clases Individuales | Estudio 369",
+  title: "Clases | Estudio 369",
   description:
     "Clases individuales de baile con atención personalizada. Aprende a tu ritmo con instructores dedicados exclusivamente a ti.",
 };
 
-export default function IndividualesPage() {
+export default function ClasesPage() {
   return (
     <>
       <Navbar />
 
-      {/* Hero */}
-      <section className="relative bg-[#F5F5F0] py-20 px-6 overflow-hidden border-b-2 border-primary">
-        <div className="absolute inset-0 flex items-center justify-center opacity-10">
-          <span className="text-[150px] md:text-[500px] font-black text-primary transform -rotate-12 lg:translate-x-20 lg:translate-y-10">
-            369
-          </span>
-        </div>
+      <section className="px-[22px] pt-[34px] pb-3 md:grid md:grid-cols-2 md:items-end md:gap-20 md:px-16 md:pt-24 md:pb-10">
+        <h1 className="font-archivo text-[56px] font-black leading-[0.9] tracking-[-0.04em] text-vino md:text-[104px]">
+          Clases
+        </h1>
 
-        <div className="container mx-auto relative z-10">
-          <div className="max-w-4xl">
-            <h1 className="text-5xl md:text-8xl font-black text-primary mb-8 leading-none">
-              CLASES
-              <br />
-            </h1>
-
-            <div className="flex items-start gap-4 mb-8">
-              <p className="text-lg text-[#1a1a1a] max-w-xl leading-relaxed">
-                En nuestras clases, cada encuentro es una nueva oportunidad de
-                brillar. La dinámica es simple pero poderosa: en una sola
-                sesión, aprenderás una coreografía completamente nueva, diseñada
-                para que puedas dominarla.
-                <br />
-                <br /> Al final de la clase, llegará tu momento de protagonista.
-                Te grabarás individualmente, llevándote a casa no solo una
-                rutina aprendida, sino un video profesional de tu desempeño. Es
-                la forma perfecta de medir tu progreso, ganar confianza y llenar
-                tu galería de contenido increíble. <br />
-                <br />
-                <span className="text-xl font-bold uppercase">
-                  ¿Te animas al reto semanal?
-                </span>
-              </p>
-              <div className="flex-shrink-0 mt-2 hidden lg:block">
-                <svg
-                  width="40"
-                  height="40"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#8B1E3F"
-                  strokeWidth="2"
-                >
-                  <path d="M7 7l10 10M7 7v10M7 7h10" />
-                </svg>
-              </div>
-            </div>
-          </div>
+        <div className="mt-4 flex flex-col gap-4 md:mt-0">
+          <p className="text-base leading-[1.55] text-ink-soft md:text-lg">
+            En una sola sesión aprendes una coreografía completamente nueva,
+            diseñada para que puedas dominarla.
+          </p>
+          <p className="text-[15px] leading-[1.55] text-muted2 md:text-base">
+            Al final te grabas individualmente y te llevas a casa un video
+            profesional de tu desempeño.
+          </p>
+          <p className="text-xl font-extrabold text-ink">
+            ¿Te animas al reto semanal?
+          </p>
         </div>
       </section>
 
-      {/* Carousel */}
-      <ClassesCarousel classType="clases" />
+      <ClassesList classType="clases" />
     </>
   );
 }

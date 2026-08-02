@@ -1,65 +1,67 @@
+"use client";
+
 import Image from "next/image";
-import Link from "next/link";
 import {
-  ArrowRight,
-  Music,
-  Lamp,
+  Frame,
+  Volume2,
+  Layers,
   Wind,
-  RectangleVertical,
-  Shirt,
-  TreePine,
-  MapPin,
-  Clock,
-  AlertCircle,
-  UtensilsCrossed,
-  Droplets,
+  Lightbulb,
+  Lock,
+  MessageCircle,
+  Mail,
 } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { StudioRentalGallery } from "@/components/studio-rental-gallery";
+import { LinkButton } from "@/components/ui/link-button";
+import { useScrollReveal } from "@/lib/hooks/use-scroll-reveal";
+import { WHATSAPP_URL } from "@/constants";
 
 const FEATURES = [
   {
-    icon: RectangleVertical,
-    value: "VISIÓN",
+    Icon: Frame,
     label: "Frente de espejo",
     description:
+      "Cobertura de pared a pared para corrección técnica de grupos.",
+    descriptionLong:
       "Amplia cobertura de pared a pared, ideal para la corrección técnica de grupos y ensayos coreográficos.",
   },
   {
-    icon: Music,
-    value: "RITMO",
+    Icon: Volume2,
     label: "Sistema de audio",
-    description:
-      "Conectividad inmediata y nítida para tus playlists, asegurando que la energía de tu clase llegue a cada rincón.",
+    description: "Conectividad inmediata y sonido nítido en cada rincón.",
+    descriptionLong:
+      "Conectividad inmediata y nítida para tus playlists, asegurando que la energía de tu sesión llegue a cada rincón.",
   },
   {
-    icon: TreePine,
-    value: "SUPERFICIE",
+    Icon: Layers,
     label: "Piso laminado",
     description:
+      "Acabado tipo madera con la estética que tus grabaciones necesitan.",
+    descriptionLong:
       "Acabado tipo madera que ofrece la estética profesional y el soporte visual necesario para tus sesiones y grabaciones.",
   },
   {
-    icon: Wind,
-    value: "CONFORT",
+    Icon: Wind,
     label: "Aire acondicionado",
-    description:
-      "Clima controlado durante toda tu sesión para garantizar el máximo rendimiento y frescura de tus alumnos.",
+    description: "Clima controlado durante toda la sesión.",
+    descriptionLong:
+      "Clima controlado durante toda tu sesión para garantizar el máximo rendimiento y frescura.",
   },
   {
-    icon: Lamp,
-    value: "AMBIENTE",
+    Icon: Lightbulb,
     label: "Iluminación LED",
-    description:
+    description: "Luz integrada ideal para grabar contenido.",
+    descriptionLong:
       "Tecnología LED integrada que crea una atmósfera moderna y vibrante, ideal para grabaciones de contenido.",
   },
   {
-    icon: Shirt,
-    value: "ORDEN",
+    Icon: Lock,
     label: "Área de resguardo",
-    description:
-      "Espacio privado para que tus alumnos guarden sus pertenencias de forma segura y servicio de sanitario disponible.",
+    description: "Espacio privado para pertenencias y servicio sanitario.",
+    descriptionLong:
+      "Espacio privado para guardar pertenencias de forma segura, con servicio de sanitario disponible.",
   },
 ];
 
@@ -91,283 +93,136 @@ const GALLERY = [
   },
 ];
 
-const PRACTICAL_INFO = [
-  {
-    icon: MapPin,
-    label: "UBICACIÓN",
-    value: "Av. Delicias",
-    description:
-      "Ubicado en una de las mejores zonas de la ciudad, de fácil acceso.",
-  },
-  {
-    icon: Clock,
-    label: "HORARIOS",
-    value: "7AM – 7PM",
-    description:
-      "Disponible todos los días de 7:00 AM a 7:00 PM para tu comodidad.",
-  },
-];
-
-const RULES = [
-  {
-    icon: AlertCircle,
-    text: "Tener cuidado con los espejos",
-  },
-  {
-    icon: UtensilsCrossed,
-    text: "No se puede comer dentro del estudio",
-  },
-  {
-    icon: Droplets,
-    text: "Mantener los espacios limpios",
-  },
-];
-
-const USE_CASES = [
-  "Ensayos de danza y coreografía",
-  "Sesiones fotográficas",
-  "Grabaciones de video y contenido",
-  "Talleres y workshops",
-  "Eventos privados",
-  "Clases particulares",
-];
-
 export default function AlquilerPage() {
+  const featuresRef = useScrollReveal<HTMLDivElement>({ stagger: true });
+  const galleryRef = useScrollReveal<HTMLElement>();
+
   return (
-    <>
+    <div className="flex min-h-screen flex-col">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative py-20 px-6 bg-[#1a1a1a] overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-end opacity-[0.04]">
-          <span className="text-[300px] md:text-[500px] font-black text-white transform translate-x-20">
-            369
-          </span>
-        </div>
-
-        <div className="container mx-auto relative z-10">
-          <div className="max-w-5xl pt-12 pb-8">
-            <p className="text-primary font-bold text-sm uppercase tracking-widest mb-6">
-              Espacio disponible
-            </p>
-            <h1 className="text-5xl md:text-8xl font-black text-white leading-none mb-8">
-              ALQUILA
+      <main className="flex-1">
+        {/* Hero */}
+        <section className="bg-white md:grid md:grid-cols-2">
+          <div className="px-[22px] pt-[34px] pb-7 md:flex md:flex-col md:justify-center md:px-16 md:py-24">
+            <h1 className="font-archivo text-[50px] font-black leading-[0.95] tracking-[-0.04em] text-ink md:text-[80px]">
+              Alquila
               <br />
-              NUESTRO
-              <br />
-              <span className="text-primary">ESTUDIO</span>
+              nuestro <span className="text-vino">estudio</span>
             </h1>
-            <p className="text-xl text-white/60 max-w-2xl leading-relaxed">
-              Nuestro espacio está disponible para alquiler. Ideal para ensayos
-              de danza, sesiones fotográficas, grabaciones de video, talleres y
-              eventos privados.
+            <p className="mt-4 max-w-[420px] text-[15px] leading-[1.55] text-muted2 md:mt-6 md:text-lg">
+              Ideal para ensayos de danza, sesiones fotográficas, grabaciones
+              de video, talleres y eventos privados.
             </p>
-          </div>
-        </div>
-
-        {/* Diagonal divider */}
-        <div
-          className="absolute bottom-0 left-0 right-0 h-16 bg-white"
-          style={{ clipPath: "polygon(0 100%, 100% 0, 100% 100%)" }}
-        />
-      </section>
-
-      {/* Description Section */}
-      <section className="py-20 px-6 bg-white">
-        <div className="container mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-            <div>
-              <h2 className="text-4xl md:text-5xl font-black text-[#1a1a1a] mb-8 leading-tight">
-                TU ESPACIO
-                <br />
-                <span className="text-primary">CREATIVO</span>
-              </h2>
-              <p className="text-lg text-[#1a1a1a] leading-relaxed mb-6">
-                El Estudio 369 no solo es nuestro hogar para la danza — también
-                puede ser el tuyo. Ponemos a tu disposición un espacio
-                profesional completamente equipado para que lleves a cabo tus
-                proyectos creativos.
-              </p>
-              <p className="text-lg text-[#1a1a1a]/70 leading-relaxed mb-8">
-                Ya sea que necesites un lugar para ensayar tu próxima
-                coreografía, realizar una sesión fotográfica con un ambiente
-                único, grabar contenido audiovisual o dictar un taller
-                especializado — nuestro estudio se adapta a ti.
-              </p>
-            </div>
-
-            {/* Studio image */}
-            <div className="relative h-[450px]">
-              <div className="absolute inset-0 rounded-2xl overflow-hidden">
-                <Image
-                  src="/images/studio-rental-hero.webp"
-                  alt="Espacio profesional del Estudio 369"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                />
-              </div>
-              <div className="absolute -bottom-4 -right-4 w-full h-full rounded-2xl border-2 border-primary/20 -z-10" />
+            <div className="mt-6 flex items-center gap-4 md:mt-9">
+              <LinkButton href="#contacto">Consultar disponibilidad</LinkButton>
+              <LinkButton
+                href="#equipamiento"
+                variant="outline"
+                className="hidden md:inline-flex"
+              >
+                Ver equipamiento
+              </LinkButton>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Features / Metrics Section */}
-      <section className="py-20 px-6 bg-[#F5F5F0]">
-        <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-primary font-bold text-sm uppercase tracking-widest mb-4">
-              Equipamiento
-            </p>
-            <h2 className="text-5xl md:text-7xl font-black text-[#1a1a1a] leading-none">
-              LO QUE
-              <br />
-              <span className="text-primary">OFRECEMOS</span>
-            </h2>
+          <div className="relative mt-0 h-[300px] overflow-hidden rounded-lg md:h-auto md:min-h-[560px]">
+            <Image
+              src="/images/studio-rental-hero.webp"
+              alt="Salón con espejo del Estudio 369"
+              fill
+              className="object-cover"
+              sizes="(max-width: 767px) 100vw, 50vw"
+            />
           </div>
+        </section>
 
-          <div className="flex flex-wrap justify-center gap-6">
-            {FEATURES.map((feature) => (
-              <div
-                key={feature.label}
-                className="bg-white rounded-2xl p-8 text-center group transition-colors duration-300 w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)]"
-              >
-                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors duration-300">
-                  <feature.icon className="w-7 h-7 text-primary" />
-                </div>
-                <p className="text-4xl font-black text-primary mb-1">
-                  {feature.value}
-                </p>
-                <p className="text-lg font-bold text-[#1a1a1a] mb-2  transition-colors duration-300">
-                  {feature.label}
-                </p>
-                <p className="text-sm text-[#1a1a1a]/60  transition-colors duration-300">
-                  {feature.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Practical Info Section */}
-      <section className="py-20 px-6 bg-white">
-        <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-primary font-bold text-sm uppercase tracking-widest mb-4">
-              Detalles
-            </p>
-            <h2 className="text-4xl lg:text-5xl md:text-7xl font-black text-[#1a1a1a] leading-none">
-              INFORMACIÓN
-              <br />
-              <span className="text-primary">PRÁCTICA</span>
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-            {PRACTICAL_INFO.map((item) => (
-              <div
-                key={item.label}
-                className="border-2 border-[#1a1a1a]/10 rounded-2xl p-8 text-center group hover:border-primary/40 transition-colors duration-300"
-              >
-                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors duration-300">
-                  <item.icon className="w-7 h-7 text-primary" />
-                </div>
-                <p className="text-xs font-bold text-primary uppercase tracking-widest mb-1">
-                  {item.label}
-                </p>
-                <p className="text-3xl font-black text-[#1a1a1a] mb-3">
-                  {item.value}
-                </p>
-                <p className="text-sm text-[#1a1a1a]/60 leading-relaxed">
-                  {item.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Gallery Section */}
-      <section className="py-20 px-6 bg-white">
-        <div className="container mx-auto">
-          <div className="mb-12  text-center lg:text-left">
-            <h2 className="text-4xl lg:text-5xl md:text-7xl font-black text-[#1a1a1a] leading-none">
-              EL ESPACIO
-            </h2>
-            <p className="mt-3 text-[#1a1a1a]/60 font-medium text-lg">
-              Conoce cada rincón de nuestro estudio.
-            </p>
-          </div>
-
-          <StudioRentalGallery items={GALLERY} />
-        </div>
-      </section>
-
-      {/* Rules Section */}
-      <section className="py-20 px-6 bg-[#F5F5F0]">
-        <div className="container mx-auto">
-          <div className="max-w-2xl">
-            <p className="text-primary font-bold text-sm uppercase tracking-widest mb-4">
-              Convivencia
-            </p>
-            <h2 className="text-5xl md:text-7xl font-black text-[#1a1a1a] leading-none mb-12">
-              REGLAS
-              <br />
-              <span className="text-primary">DEL ESTUDIO</span>
-            </h2>
-          </div>
-
-          <div className="max-w-2xl flex flex-col divide-y divide-[#1a1a1a]/10">
-            {RULES.map((rule, index) => (
-              <div key={index} className="flex items-center gap-5 py-6">
-                <rule.icon className="w-5 h-5 text-primary flex-shrink-0" />
-                <p className="text-xl font-bold text-[#1a1a1a]">{rule.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-6 bg-primary relative overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center opacity-10">
-          <span className="text-[300px] md:text-[400px] font-black text-white transform -rotate-6">
-            369
-          </span>
-        </div>
-
-        <div className="container mx-auto relative z-10 text-center">
-          <h2 className="text-5xl md:text-7xl font-black text-white mb-6 leading-none">
-            ¿LISTO PARA
-            <br />
-            RESERVAR?
+        {/* Tu espacio creativo */}
+        <section className="px-[22px] py-11 md:grid md:grid-cols-2 md:gap-20 md:px-16 md:py-24">
+          <h2 className="font-archivo text-[34px] font-black leading-[1] tracking-[-0.035em] text-ink md:text-[56px]">
+            Tu espacio <span className="text-vino">creativo</span>
           </h2>
-          <p className="text-xl text-white/80 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Escríbenos por WhatsApp y te ayudaremos a coordinar tu reserva.
-          </p>
-          <div className="flex flex-col md:flex-row gap-4 justify-center">
-            <a
-              href="https://wa.me/584246257045"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 bg-white text-primary font-bold px-8 py-3 rounded-lg hover:bg-white/90 transition-colors"
-            >
-              ESCRIBIR POR WHATSAPP
-              <ArrowRight className="w-5 h-5" />
-            </a>
-            <Link
-              href="/"
-              className="inline-flex items-center justify-center gap-2 border-2 border-white text-white font-bold px-8 py-3 rounded-lg hover:bg-white hover:text-primary transition-colors"
-            >
-              VOLVER AL INICIO
-            </Link>
+          <div className="mt-4 flex flex-col gap-4 md:mt-0">
+            <p className="text-[15px] leading-[1.55] text-ink-soft md:text-lg">
+              El Estudio 369 no solo es nuestro hogar para la danza — también
+              puede ser el tuyo. Ponemos a tu disposición un espacio
+              profesional completamente equipado para que lleves a cabo tus
+              proyectos creativos.
+            </p>
+            <p className="text-[15px] leading-[1.55] text-muted2 md:text-[17px]">
+              Ya sea que necesites ensayar tu próxima coreografía, hacer una
+              sesión fotográfica con un ambiente único, grabar contenido
+              audiovisual o dictar un taller especializado — el estudio se
+              adapta a ti.
+            </p>
           </div>
-        </div>
-      </section>
+        </section>
+
+        {/* Lo que ofrecemos */}
+        <section id="equipamiento" className="px-[22px] py-9 md:px-16 md:py-16">
+          <h2 className="font-archivo text-[30px] font-black leading-none tracking-[-0.03em] text-ink md:text-[52px]">
+            Lo que ofrecemos
+          </h2>
+
+          <div
+            ref={featuresRef}
+            className="mt-4 md:mt-8 md:grid md:grid-cols-2 md:gap-x-16"
+          >
+            {FEATURES.map(({ Icon, label, description, descriptionLong }) => (
+              <div key={label} className="border-t border-line py-[18px] md:py-6">
+                <div className="flex items-center gap-2.5">
+                  <Icon
+                    size={20}
+                    strokeWidth={1.75}
+                    className="text-vino md:h-6 md:w-6"
+                  />
+                  <h3 className="text-[19px] font-extrabold text-ink md:text-2xl">
+                    {label}
+                  </h3>
+                </div>
+                <p className="mt-1.5 text-sm leading-[1.5] text-muted2 md:mt-2 md:text-base">
+                  <span className="md:hidden">{description}</span>
+                  <span className="hidden md:inline">{descriptionLong}</span>
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Gallery */}
+        <section ref={galleryRef} className="px-[22px] py-9 md:px-16 md:py-16">
+          <StudioRentalGallery items={GALLERY} />
+        </section>
+
+        {/* ¿Cuándo lo necesitas? */}
+        <section
+          id="contacto"
+          className="px-[22px] py-9 md:grid md:grid-cols-2 md:gap-20 md:px-16 md:py-24"
+        >
+          <div>
+            <h2 className="font-archivo text-[30px] font-black leading-none tracking-[-0.03em] text-vino md:text-[56px]">
+              ¿Cuándo lo necesitas?
+            </h2>
+            <p className="mt-4 max-w-[420px] text-[15px] leading-[1.55] text-muted2 md:text-lg">
+              Escríbenos con la fecha y las horas y te confirmamos
+              disponibilidad el mismo día.
+            </p>
+          </div>
+
+          <div className="mt-6 flex flex-col items-stretch gap-3 md:mt-0 md:items-start md:gap-4">
+            <LinkButton href={WHATSAPP_URL}>
+              <MessageCircle size={18} strokeWidth={1.75} />
+              Escribir por WhatsApp
+            </LinkButton>
+            <LinkButton href="mailto:info@369estudio.com" variant="outline">
+              <Mail size={18} strokeWidth={1.75} />
+              info@369estudio.com
+            </LinkButton>
+          </div>
+        </section>
+      </main>
 
       <Footer />
-    </>
+    </div>
   );
 }

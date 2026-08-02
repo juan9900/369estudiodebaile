@@ -59,6 +59,31 @@ export interface Registration {
   contact_phone: string;
   contact_email: string;
   money_returned: boolean;
+  discount_applied: boolean;
+  paid_amount: number | null;
+  promo_pack: number | null;
+  purchase_id: string | null;
+}
+
+export type PromoDiscountType =
+  | "none"
+  | "percent"
+  | "free_classes"
+  | "fixed_price";
+
+export interface PromoPackRow {
+  id: string;
+  size: number;
+  label: string;
+  discount_type: PromoDiscountType;
+  discount_value: number | null;
+  note: string | null;
+  valid_from: string | null;
+  valid_until: string | null;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface StudioSettings {

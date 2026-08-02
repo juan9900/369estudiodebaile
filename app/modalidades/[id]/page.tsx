@@ -1,10 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import type { DanceClass } from "@/lib/types/database";
+import { Navbar } from "@/components/navbar";
 import { ClassDetailHero } from "@/components/classes/class-detail-hero";
-import { ClassIntegratedContentSection } from "@/components/classes/class-integrated-content-section";
-import { ClassCtaSection } from "@/components/classes/class-cta-section";
+import { ClassDetailContent } from "@/components/classes/class-detail-content";
 import { notFound } from "next/navigation";
-import { Footer } from "@/components/footer";
 
 export default async function ClassDetailPage({
   params,
@@ -32,9 +31,9 @@ export default async function ClassDetailPage({
 
   return (
     <>
+      <Navbar />
       <ClassDetailHero danceClass={danceClass} />
-      <ClassIntegratedContentSection danceClass={danceClass} />
-      <ClassCtaSection danceClass={danceClass} />
+      <ClassDetailContent danceClass={danceClass} />
     </>
   );
 }

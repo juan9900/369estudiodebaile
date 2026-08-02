@@ -10,6 +10,7 @@ import { PaymentInfo } from "@/components/checkout/payment-info";
 import { ArrowRight, BadgeCheck, SquareCheck } from "lucide-react";
 import { Resend } from "resend";
 import Link from "next/link";
+import { buildRegistrationEmails } from "@/lib/utils/checkout-notifications";
 
 const PAYMENT_OPTIONS: { value: PaymentMethod; label: string }[] = [
   { value: "zelle", label: "Zelle" },
@@ -23,6 +24,20 @@ interface CheckoutFormProps {
   step: 1 | 2 | 3;
   setStep: React.Dispatch<React.SetStateAction<1 | 2 | 3>>;
   euroRate: number | null;
+  /** Classes to register the contact in. Defaults to just `danceClass` when omitted. */
+  selectedClasses?: DanceClass[];
+  /** Total USD amount to charge. Defaults to `danceClass.price` when omitted. */
+  total?: number | null;
+  /** Amount attributed to each individual registration row. Defaults to `total`. */
+  perClassAmount?: number | null;
+  /** Per-registration amount, aligned with `selectedClasses` order. Overrides `perClassAmount` per-row when set. */
+  perClassAmounts?: (number | null)[] | null;
+  discountApplied?: boolean;
+  /** Per-registration discount flag, aligned with `selectedClasses` order. Overrides `discountApplied` per-row when set. */
+  discountFlags?: boolean[] | null;
+  promoPack?: number | null;
+  /** When set, "Volver" on the contact step returns to the promo/carousel steps instead of the class page. */
+  onBackFromContact?: () => void;
 }
 
 export function CheckoutForm({
@@ -30,7 +45,27 @@ export function CheckoutForm({
   step,
   setStep,
   euroRate,
+  selectedClasses,
+  total,
+  perClassAmount,
+  perClassAmounts,
+  discountApplied = false,
+  discountFlags,
+  promoPack = null,
+  onBackFromContact,
 }: CheckoutFormProps) {
+  const classesToRegister = selectedClasses ?? [danceClass];
+  const chargeTotal = total !== undefined ? total : danceClass.price;
+  const amountPerClass =
+    perClassAmount !== undefined ? perClassAmount : chargeTotal;
+  const amountForIndex = (i: number) =>
+    perClassAmounts && perClassAmounts.length === classesToRegister.length
+      ? perClassAmounts[i]
+      : amountPerClass;
+  const discountForIndex = (i: number) =>
+    discountFlags && discountFlags.length === classesToRegister.length
+      ? discountFlags[i]
+      : discountApplied;
   // Contact fields
   const [name, setName] = useState("");
   const [lastname, setLastname] = useState("");
@@ -85,46 +120,29 @@ export function CheckoutForm({
     email: string;
   }) {
     try {
+      const messages = buildRegistrationEmails({
+        name,
+        lastname,
+        phone,
+        email,
+        classes: classesToRegister.map((cls, i) => ({
+          className: cls.title,
+          instructor: cls.instructor,
+          day: cls.scheduled_date,
+          hour: cls.start_time,
+          price: amountForIndex(i) ?? null,
+        })),
+        totalPrice: chargeTotal,
+        paymentMethod,
+        transactionId: reference,
+      });
+
       const response = await fetch("/api/send", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-
-        body: JSON.stringify({
-          messages: [
-            {
-              template: "adminClientRegistered",
-              payload: {
-                clientName: name,
-                clientLastName: lastname,
-                clientPhone: phone,
-                clientEmail: email,
-                className: danceClass.title,
-                instructor: danceClass.instructor,
-                day: danceClass.scheduled_date,
-                hour: danceClass.start_time,
-                price: danceClass.price,
-                paymentMethod: paymentMethod,
-                transactionId: reference,
-              },
-            },
-            {
-              template: "clientStatusChange",
-              toEmail: email,
-              payload: {
-                clientName: name,
-                clientLastName: lastname,
-                clientEmail: email,
-                className: danceClass.title,
-                instructor: danceClass.instructor,
-                day: danceClass.scheduled_date,
-                hour: danceClass.start_time,
-                price: danceClass.price,
-              },
-            },
-          ],
-        }),
+        body: JSON.stringify({ messages }),
       });
 
       console.log(response);
@@ -165,9 +183,11 @@ export function CheckoutForm({
         .join(" | ");
     }
 
-    const { error: insertError } = await supabase.from("registrations").insert({
-      class_id: danceClass.id,
-      status: "pending",
+    const purchaseId = crypto.randomUUID();
+
+    const rows = classesToRegister.map((cls, i) => ({
+      class_id: cls.id,
+      status: "pending" as const,
       payment_method: paymentMethod,
       transaction_id:
         paymentMethod === "efectivo" || paymentMethod === "bs" ? null : reference.trim(),
@@ -176,12 +196,22 @@ export function CheckoutForm({
       contact_lastname: lastname.trim(),
       contact_phone: phone.trim(),
       contact_email: email.trim(),
-    });
+      discount_applied: discountForIndex(i),
+      paid_amount: amountForIndex(i),
+      promo_pack: discountApplied ? promoPack : null,
+      purchase_id: purchaseId,
+    }));
+
+    const { error: insertError } = await supabase
+      .from("registrations")
+      .insert(rows);
 
     if (insertError) {
       setError(
         insertError.code === "23505"
-          ? "Ya existe una reserva con este correo para esta clase."
+          ? classesToRegister.length > 1
+            ? "Ya tienes una reserva en una de las clases seleccionadas."
+            : "Ya existe una reserva con este correo para esta clase."
           : "No se pudo crear la reserva. Inténtalo de nuevo.",
       );
       setLoading(false);
@@ -208,17 +238,13 @@ export function CheckoutForm({
         <h2 className="text-4xl font-black text-white mb-2">
           ¡Tu reserva se ha registrado!
         </h2>
-        <p className="text-white mt-6 mb-2 text-lg uppercase font-bold">
-          Tu estado es{" "}
-          <span className="text-yellow-300 font-semibold">pendiente</span>
-        </p>
-        <p className="text-white/50 text-lg">
+        <p className="text-white/50 text-sm mt-6">
           Se envió un resumen a{" "}
           <span className="text-white/80">{email.trim()}</span>.
         </p>
 
         {paymentMethod === "bs" && (
-          <p className="text-yellow-300 text-sm mt-4 font-semibold">
+          <p className="text-yellow-300 text-base mt-4 font-semibold">
             Recuerda que el pago en bolívares debe realizarse el día de la clase. ¡Tu cupo está asegurado!
           </p>
         )}
@@ -302,14 +328,24 @@ export function CheckoutForm({
         </div>
 
         <div className="flex gap-3">
-          <Link href={`/modalidades/${danceClass.id}`} className="flex-1">
+          {onBackFromContact ? (
             <Button
               variant="outline"
-              className="w-full border-white/30 text-primary hover:text-primary font-black hover:bg-gray-200"
+              onClick={onBackFromContact}
+              className="flex-1 border-white/30 text-primary hover:text-primary font-black hover:bg-gray-200"
             >
               ← Volver
             </Button>
-          </Link>
+          ) : (
+            <Link href={`/modalidades/${danceClass.id}`} className="flex-1">
+              <Button
+                variant="outline"
+                className="w-full border-white/30 text-primary hover:text-primary font-black hover:bg-gray-200"
+              >
+                ← Volver
+              </Button>
+            </Link>
+          )}
           <Button
             onClick={() => setStep(2)}
             disabled={!contactValid}
@@ -361,7 +397,7 @@ export function CheckoutForm({
         <PaymentInfo
           method={paymentMethod}
           euroRate={euroRate}
-          price={danceClass.price}
+          total={chargeTotal}
         />
       )}
 
@@ -448,12 +484,7 @@ export function CheckoutForm({
       )}
 
       {paymentMethod === "bs" && (
-        <div className="rounded-lg border bg-white p-4">
-          <p className="text-sm font-bold uppercase text-textColor mb-1">Pago en bolívares</p>
-          <p className="text-textColor text-sm">
-            El pago en bolívares se realiza el día de la clase. Tu cupo quedará asegurado al completar el registro.
-          </p>
-        </div>
+        <PaymentInfo method="bs" euroRate={euroRate} total={chargeTotal} />
       )}
 
       {error && <p className="text-red-300 text-sm">{error}</p>}

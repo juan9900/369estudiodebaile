@@ -28,16 +28,16 @@ const PAYMENT_DETAILS: Record<
 interface PaymentInfoProps {
   method: PaymentMethod;
   euroRate?: number | null;
-  price?: number | null;
+  total?: number | null;
 }
 
-export function PaymentInfo({ method, euroRate, price }: PaymentInfoProps) {
+export function PaymentInfo({ method, euroRate, total }: PaymentInfoProps) {
   const detail = PAYMENT_DETAILS[method];
   if (!detail) return null;
 
   const bsPrice =
-    method === "bs" && euroRate != null && price != null
-      ? (price * euroRate).toLocaleString("es-VE", {
+    method === "bs" && euroRate != null && total != null
+      ? (total * euroRate).toLocaleString("es-VE", {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         })

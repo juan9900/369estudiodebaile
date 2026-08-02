@@ -20,6 +20,8 @@ import type {
   RegistrationWithClass,
   RegistrationStatus,
 } from "@/lib/types/database";
+import { createClient } from "@/lib/supabase/client";
+import { notifyPackStatusIfResolved } from "@/lib/utils/registration-status-notify";
 
 const paymentMethodLabels: Record<string, string> = {
   zelle: "Zelle",
@@ -53,6 +55,7 @@ export function RegistrationDetailDialog({
     registration?.money_returned ?? false,
   );
   const [saving, setSaving] = useState(false);
+  const [sendingSummary, setSendingSummary] = useState(false);
 
   // Sync moneyReturned from registration when dialog opens
   useEffect(() => {
@@ -87,31 +90,39 @@ export function RegistrationDetailDialog({
         currentStatus === "cancelled" ? moneyReturned : undefined,
       );
       if (statusChanged) {
-        await fetch("/api/send", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            messages: [
-              {
-                template: "clientStatusChange",
-                toEmail: registration.contact_email,
-                payload: {
-                  clientName: registration.contact_name,
-                  clientLastName: registration.contact_lastname,
-                  clientEmail: registration.contact_email,
-                  className: registration.classes.title,
-                  instructor: registration.classes.instructor,
-                  day: registration.classes.scheduled_date,
-                  hour: registration.classes.start_time,
-                  price: registration.classes.price,
-                  status: selectedStatus,
+        const isPack = registration.promo_pack && registration.promo_pack > 1;
+        if (isPack && registration.purchase_id) {
+          const supabase = createClient();
+          await notifyPackStatusIfResolved(supabase, {
+            purchaseId: registration.purchase_id,
+          });
+        } else {
+          await fetch("/api/send", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              messages: [
+                {
+                  template: "clientStatusChange",
+                  toEmail: registration.contact_email,
+                  payload: {
+                    clientName: registration.contact_name,
+                    clientLastName: registration.contact_lastname,
+                    clientEmail: registration.contact_email,
+                    className: registration.classes.title,
+                    instructor: registration.classes.instructor,
+                    day: registration.classes.scheduled_date,
+                    hour: registration.classes.start_time,
+                    price: registration.classes.price,
+                    status: selectedStatus,
+                  },
                 },
-              },
-            ],
-          }),
-        });
+              ],
+            }),
+          });
+        }
       }
     } catch (error) {
       console.log(error);
@@ -123,7 +134,25 @@ export function RegistrationDetailDialog({
     }
   };
 
+  const handleSendSummary = async () => {
+    if (!registration?.purchase_id) return;
+    setSendingSummary(true);
+    try {
+      const supabase = createClient();
+      await notifyPackStatusIfResolved(supabase, {
+        purchaseId: registration.purchase_id,
+        force: true,
+      });
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setSendingSummary(false);
+    }
+  };
+
   if (!registration) return null;
+
+  const isPack = registration.promo_pack && registration.promo_pack > 1;
 
   const cls = registration.classes;
   const dateStr = new Date(cls.scheduled_date + "T00:00:00").toLocaleDateString(
@@ -175,7 +204,14 @@ export function RegistrationDetailDialog({
                 registration.payment_method)
               : "—"}
           </Row>
-          <Row label="Costo">${registration.classes.price}</Row>
+          <Row label="Costo">
+            ${registration.paid_amount ?? registration.classes.price}
+          </Row>
+          <Row label="Descuento">
+            {registration.discount_applied
+              ? `Sí${registration.promo_pack ? ` (paquete de ${registration.promo_pack})` : ""}`
+              : "No"}
+          </Row>
           <Row label="ID Recibo">{registration.transaction_id ?? "—"}</Row>
           {registration.notes && <Row label="Notas">{registration.notes}</Row>}
           <Row label="Fecha de inscripción">{createdStr}</Row>
@@ -240,6 +276,16 @@ export function RegistrationDetailDialog({
         </div>
 
         <DialogFooter>
+          {isPack && registration.purchase_id && (
+            <Button
+              variant="outline"
+              onClick={handleSendSummary}
+              disabled={sendingSummary || saving}
+              className="mr-auto"
+            >
+              {sendingSummary ? "Enviando..." : "Enviar resumen ahora"}
+            </Button>
+          )}
           <Button variant="outline" onClick={onClose} disabled={saving}>
             Cancelar
           </Button>
