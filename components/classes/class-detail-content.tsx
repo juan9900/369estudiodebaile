@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, Signal, Tag, User } from "lucide-react";
+import { Calendar, Music2, Signal, Tag, User } from "lucide-react";
 import type { DanceClass } from "@/lib/types/database";
 import { getClassDisplayTitle } from "@/lib/utils/class-display";
 import {
@@ -123,6 +123,40 @@ export function ClassDetailContent({ danceClass }: ClassDetailContentProps) {
             })}
         </div>
 
+        {/* Canción */}
+        {(danceClass.song_title || danceClass.song_artist) && (
+          <div className="border-t border-line px-[22px] py-4 md:px-0 md:py-[18px]">
+            <div className="flex items-start justify-between gap-4">
+              <span className="flex shrink-0 items-center gap-2 text-sm text-muted2-2 md:text-[15px]">
+                <Music2 size={16} strokeWidth={1.75} className="text-vino" />
+                Canción
+              </span>
+              <span className="min-w-0 flex-1 text-right">
+                {danceClass.song_title && (
+                  <span className="block text-base font-bold leading-snug text-ink md:text-[17px]">
+                    {danceClass.song_title}
+                  </span>
+                )}
+                {danceClass.song_artist && (
+                  <span className="mt-0.5 block text-sm text-muted2">
+                    {danceClass.song_artist}
+                  </span>
+                )}
+                {danceClass.song_youtube_url && (
+                  <a
+                    href={danceClass.song_youtube_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1.5 inline-block text-xs font-bold text-vino underline-offset-4 hover:underline"
+                  >
+                    Escuchar en YouTube
+                  </a>
+                )}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Reserve bar — desktop */}
         <div className="mt-6 hidden md:block">
           <Link
@@ -136,9 +170,6 @@ export function ClassDetailContent({ danceClass }: ClassDetailContentProps) {
           >
             Reservar
           </Link>
-          <p className="mt-3 text-center text-sm text-muted2-2">
-            Confirmamos tu lugar por WhatsApp
-          </p>
         </div>
       </div>
 

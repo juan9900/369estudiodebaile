@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Clock } from "lucide-react";
+import { Clock, Music2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { DanceClass } from "@/lib/types/database";
 import { getClassDisplayTitle } from "@/lib/utils/class-display";
@@ -118,6 +118,21 @@ export function ClassesList({ classType }: ClassesListProps) {
                     {levelText && (
                       <p className="mt-1 hidden text-[15px] text-muted2 md:block">
                         Nivel {levelText.toLowerCase()}
+                      </p>
+                    )}
+                    {(cls.song_title || cls.song_artist) && (
+                      <p className="mt-1 flex items-center gap-1.5 text-sm text-muted2 md:mt-1.5">
+                        <Music2
+                          size={13}
+                          strokeWidth={1.75}
+                          className="shrink-0 text-vino"
+                        />
+                        <span className="truncate">
+                          {cls.song_title}
+                          {cls.song_artist
+                            ? ` — ${cls.song_artist}`
+                            : ""}
+                        </span>
                       </p>
                     )}
                     <span className="mt-3 inline-block rounded-sm bg-vino px-4 py-2 text-[13px] font-bold text-white transition-colors group-hover:bg-vino-hover md:hidden">
