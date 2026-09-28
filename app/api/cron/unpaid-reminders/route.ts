@@ -2,6 +2,7 @@ import EmailAdminUnpaidReminder from "@/components/emails/email-admin-unpaid-rem
 import { createAdminClient } from "@/lib/supabase/admin";
 import { NextRequest } from "next/server";
 import { Resend } from "resend";
+import { getCycleSessionDates } from "@/lib/utils/fixed-class-cycle";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest) {
 
   const targetDates = [1, 2, 3].map(getCaracasDate);
 
-  const { data: registrations, error } = await supabase
+  const { data: datedRegistrations, error } = await supabase
     .from("registrations")
     .select(
       `
@@ -56,7 +57,61 @@ export async function GET(req: NextRequest) {
     return Response.json({ error: error.message }, { status: 500 });
   }
 
-  if (!registrations || registrations.length === 0) {
+  // Fixed classes ("fijas") have no scheduled_date — their next session
+  // date is derived from classes.weekday + registrations.cycle_month, so
+  // they need a separate query + in-memory filter against targetDates
+  // instead of the `.in("classes.scheduled_date", ...)` filter above.
+  const { data: fixedRegistrationsRaw, error: fixedError } = await supabase
+    .from("registrations")
+    .select(
+      `
+      id,
+      payment_method,
+      contact_name,
+      contact_lastname,
+      contact_email,
+      contact_phone,
+      cycle_month,
+      classes!inner(
+        id,
+        title,
+        instructor,
+        class_type,
+        weekday,
+        start_time,
+        price,
+        is_active
+      )
+    `,
+    )
+    .eq("status", "pending")
+    .eq("classes.is_active", true)
+    .eq("classes.class_type", "fijas")
+    .not("cycle_month", "is", null);
+
+  if (fixedError) {
+    console.error("Error fetching unpaid fixed-class registrations:", fixedError);
+  }
+
+  const fixedRegistrations = (fixedRegistrationsRaw ?? [])
+    .map((reg) => {
+      const cls = reg.classes as any;
+      if (cls?.weekday == null || !reg.cycle_month) return null;
+      const sessionDates = getCycleSessionDates(cls.weekday, reg.cycle_month);
+      const matchedDate = sessionDates.find((d) => targetDates.includes(d));
+      if (!matchedDate) return null;
+      // Reshape into the same "classes.scheduled_date" shape the dated
+      // query returns, so both feed the same grouping logic below.
+      return {
+        ...reg,
+        classes: { ...cls, scheduled_date: matchedDate },
+      };
+    })
+    .filter((r): r is NonNullable<typeof r> => r !== null);
+
+  const registrations = [...(datedRegistrations ?? []), ...fixedRegistrations];
+
+  if (registrations.length === 0) {
     return Response.json({ message: "No pending registrations found" });
   }
 

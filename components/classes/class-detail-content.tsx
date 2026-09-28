@@ -2,16 +2,16 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, Music2, Signal, Tag, User } from "lucide-react";
+import { Music2, Signal, Tag, User } from "lucide-react";
 import type { DanceClass } from "@/lib/types/database";
 import { getClassDisplayTitle } from "@/lib/utils/class-display";
-import {
-  formatClassMetaDesktop,
-  formatClassMetaMobile,
-} from "@/lib/utils/date-format";
+import { formatSessionDatesList } from "@/lib/utils/date-format";
 import { CLASS_LEVELS, WHATSAPP_URL } from "@/constants";
 import { LinkButton } from "@/components/ui/link-button";
 import { useScrollReveal } from "@/lib/hooks/use-scroll-reveal";
+import { useCycleOptions } from "@/lib/hooks/use-cycle-options";
+import { isFixedClass } from "@/lib/utils/class-type";
+import { ClassScheduleMeta } from "@/components/classes/class-schedule-meta";
 
 const FALLBACK_PHOTO = "/images/studio-rental-hero.webp";
 
@@ -20,8 +20,19 @@ interface ClassDetailContentProps {
 }
 
 export function ClassDetailContent({ danceClass }: ClassDetailContentProps) {
-  const spotsLeft = danceClass.max_capacity - danceClass.current_enrollment;
-  const isFull = spotsLeft <= 0;
+  const isFixed = isFixedClass(danceClass);
+  const { options: cycles } = useCycleOptions(danceClass);
+  // Prefer the earliest cycle with spots open; fall back to the next month
+  // (last option) so the page still shows something while cycles load.
+  const nextCycle =
+    cycles.find((c) => !c.disabled) ?? cycles[cycles.length - 1];
+
+  const spotsLeft = isFixed
+    ? (nextCycle?.spotsLeft ?? null)
+    : danceClass.max_capacity - danceClass.current_enrollment;
+  const isFull = isFixed
+    ? cycles.length > 0 && cycles.every((c) => c.disabled)
+    : spotsLeft !== null && spotsLeft <= 0;
   const levelText = CLASS_LEVELS.find(
     (l) => l.levelNumber == danceClass.level,
   )?.levelText;
@@ -52,22 +63,7 @@ export function ClassDetailContent({ danceClass }: ClassDetailContentProps) {
     >
       {/* Meta + title */}
       <div className="px-[22px] pt-6 md:col-start-1 md:row-start-1 md:px-0 md:pt-0">
-        <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.14em] text-vino md:text-[13px] md:tracking-[0.16em]">
-          <Calendar size={14} strokeWidth={1.75} />
-          <span className="md:hidden">
-            {formatClassMetaMobile(
-              danceClass.scheduled_date,
-              danceClass.start_time,
-            )}
-          </span>
-          <span className="hidden md:inline">
-            {formatClassMetaDesktop(
-              danceClass.scheduled_date,
-              danceClass.start_time,
-              danceClass.end_time,
-            )}
-          </span>
-        </div>
+        <ClassScheduleMeta danceClass={danceClass} />
         <h1 className="mt-3 font-archivo text-[50px] font-black leading-[0.95] tracking-[-0.04em] text-ink md:text-[84px]">
           {title}
         </h1>
@@ -94,8 +90,19 @@ export function ClassDetailContent({ danceClass }: ClassDetailContentProps) {
                 ? { label: "Nivel", value: levelText, Icon: Signal }
                 : null,
               { label: "Género", value: danceClass.genre, Icon: Tag },
+              isFixed && nextCycle
+                ? {
+                    label: "Ciclo",
+                    value: `${formatSessionDatesList(nextCycle.sessions)} (${nextCycle.sessions.length} clases)`,
+                    Icon: Tag,
+                  }
+                : null,
               danceClass.price !== null
-                ? { label: "Precio", value: `$${danceClass.price}`, Icon: Tag }
+                ? {
+                    label: isFixed ? "Precio mensual (4 clases)" : "Precio",
+                    value: `$${danceClass.price}`,
+                    Icon: Tag,
+                  }
                 : null,
             ] as const
           )
@@ -195,7 +202,7 @@ export function ClassDetailContent({ danceClass }: ClassDetailContentProps) {
         <div>
           {danceClass.price !== null && (
             <p className="text-lg font-extrabold text-ink">
-              Precio: ${danceClass.price}
+              {isFixed ? "Mensual" : "Precio"}: ${danceClass.price}
             </p>
           )}
         </div>

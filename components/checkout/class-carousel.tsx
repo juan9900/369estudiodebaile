@@ -4,15 +4,15 @@ import { Check, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getClassDisplayTitle } from "@/lib/utils/class-display";
 import { formatClassMetaMobile } from "@/lib/utils/date-format";
-import type { DanceClass } from "@/lib/types/database";
+import type { DatedDanceClass } from "@/lib/hooks/use-available-classes";
 
 interface ClassCarouselProps {
-  classes: DanceClass[];
+  classes: DatedDanceClass[];
   loading: boolean;
   packSize: number;
   count: number;
   isSelected: (id: string) => boolean;
-  onAdd: (cls: DanceClass) => void;
+  onAdd: (cls: DatedDanceClass) => void;
   onRemove: (id: string) => void;
   isComplete: boolean;
   onContinue: () => void;

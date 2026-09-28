@@ -11,6 +11,9 @@ import { ArrowRight, BadgeCheck, SquareCheck } from "lucide-react";
 import { Resend } from "resend";
 import Link from "next/link";
 import { buildRegistrationEmails } from "@/lib/utils/checkout-notifications";
+import { formatSessionDatesList } from "@/lib/utils/date-format";
+import { formatTimeAMPM } from "@/lib/utils/time-slots";
+import type { CycleOption } from "@/lib/hooks/use-cycle-options";
 
 const PAYMENT_OPTIONS: { value: PaymentMethod; label: string }[] = [
   { value: "zelle", label: "Zelle" },
@@ -38,6 +41,8 @@ interface CheckoutFormProps {
   promoPack?: number | null;
   /** When set, "Volver" on the contact step returns to the promo/carousel steps instead of the class page. */
   onBackFromContact?: () => void;
+  /** Set for a fixed-class ("fijas") purchase: the monthly cycle the student picked. */
+  cycle?: CycleOption | null;
 }
 
 export function CheckoutForm({
@@ -53,6 +58,7 @@ export function CheckoutForm({
   discountFlags,
   promoPack = null,
   onBackFromContact,
+  cycle = null,
 }: CheckoutFormProps) {
   const classesToRegister = selectedClasses ?? [danceClass];
   const chargeTotal = total !== undefined ? total : danceClass.price;
@@ -128,8 +134,12 @@ export function CheckoutForm({
         classes: classesToRegister.map((cls, i) => ({
           className: cls.title,
           instructor: cls.instructor,
-          day: cls.scheduled_date,
-          hour: cls.start_time,
+          day: cycle
+            ? `${formatSessionDatesList(cycle.sessions)} (${cycle.sessionCount} clases · ${cycle.monthLabel})`
+            : (cls.scheduled_date ?? ""),
+          hour: cycle
+            ? `Todas las semanas, ${formatTimeAMPM(cls.start_time)}`
+            : cls.start_time,
           price: amountForIndex(i) ?? null,
         })),
         totalPrice: chargeTotal,
@@ -196,10 +206,16 @@ export function CheckoutForm({
       contact_lastname: lastname.trim(),
       contact_phone: phone.trim(),
       contact_email: email.trim(),
-      discount_applied: discountForIndex(i),
-      paid_amount: amountForIndex(i),
-      promo_pack: discountApplied ? promoPack : null,
+      // A fixed-class cycle is a simple monthly price, never a promo
+      // discount — discount_applied/promo_pack stay false/null so the
+      // admin's discount reporting isn't polluted by prorated cycles.
+      discount_applied: cycle ? false : discountForIndex(i),
+      paid_amount: cycle ? cycle.price : amountForIndex(i),
+      promo_pack: cycle ? null : discountApplied ? promoPack : null,
       purchase_id: purchaseId,
+      cycle_month: cycle ? cycle.month : null,
+      cycle_sessions: cycle ? cycle.sessionCount : null,
+      cycle_first_session: cycle ? (cycle.sessions[0] ?? null) : null,
     }));
 
     const { error: insertError } = await supabase
@@ -209,9 +225,11 @@ export function CheckoutForm({
     if (insertError) {
       setError(
         insertError.code === "23505"
-          ? classesToRegister.length > 1
-            ? "Ya tienes una reserva en una de las clases seleccionadas."
-            : "Ya existe una reserva con este correo para esta clase."
+          ? cycle
+            ? "Ya tienes una reserva para esta clase en ese mes."
+            : classesToRegister.length > 1
+              ? "Ya tienes una reserva en una de las clases seleccionadas."
+              : "Ya existe una reserva con este correo para esta clase."
           : "No se pudo crear la reserva. Inténtalo de nuevo.",
       );
       setLoading(false);

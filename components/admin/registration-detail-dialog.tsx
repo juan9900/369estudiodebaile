@@ -22,6 +22,7 @@ import type {
 } from "@/lib/types/database";
 import { createClient } from "@/lib/supabase/client";
 import { notifyPackStatusIfResolved } from "@/lib/utils/registration-status-notify";
+import { formatCycleMonthLabel } from "@/lib/utils/date-format";
 
 const paymentMethodLabels: Record<string, string> = {
   zelle: "Zelle",
@@ -113,7 +114,11 @@ export function RegistrationDetailDialog({
                     clientEmail: registration.contact_email,
                     className: registration.classes.title,
                     instructor: registration.classes.instructor,
-                    day: registration.classes.scheduled_date,
+                    day:
+                      registration.classes.class_type === "fijas" &&
+                      registration.cycle_month
+                        ? `${formatCycleMonthLabel(registration.cycle_month)} · ${registration.cycle_sessions ?? 4} clases`
+                        : (registration.classes.scheduled_date ?? ""),
                     hour: registration.classes.start_time,
                     price: registration.classes.price,
                     status: selectedStatus,
@@ -155,15 +160,20 @@ export function RegistrationDetailDialog({
   const isPack = registration.promo_pack && registration.promo_pack > 1;
 
   const cls = registration.classes;
-  const dateStr = new Date(cls.scheduled_date + "T00:00:00").toLocaleDateString(
-    "es-ES",
-    {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    },
-  );
+  const dateStr =
+    cls.class_type === "fijas" && registration.cycle_month
+      ? `${formatCycleMonthLabel(registration.cycle_month)} · ${registration.cycle_sessions ?? 4} clases`
+      : cls.scheduled_date
+        ? new Date(cls.scheduled_date + "T00:00:00").toLocaleDateString(
+            "es-ES",
+            {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            },
+          )
+        : "";
   const createdStr = new Date(registration.created_at).toLocaleDateString(
     "es-ES",
     {

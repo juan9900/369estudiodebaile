@@ -6,6 +6,7 @@ import { type ColumnDef } from "@tanstack/react-table";
 
 import { Badge } from "@/components/ui/badge";
 import type { DanceClass } from "@/lib/types/database";
+import { formatWeeklyScheduleShort } from "@/lib/utils/date-format";
 
 function formatClassDate(dateStr: string): string {
   const [year, month, day] = dateStr.split("-").map(Number);
@@ -54,7 +55,13 @@ export function getClassesColumns(
     {
       id: "fecha",
       header: "Fecha",
-      cell: ({ row }) => formatClassDate(row.original.scheduled_date),
+      cell: ({ row }) => {
+        const cls = row.original;
+        if (cls.class_type === "fijas" && cls.weekday != null) {
+          return formatWeeklyScheduleShort(cls.weekday, cls.start_time);
+        }
+        return cls.scheduled_date ? formatClassDate(cls.scheduled_date) : "—";
+      },
     },
     {
       id: "horario",
@@ -74,6 +81,9 @@ export function getClassesColumns(
       header: "Inscritos",
       cell: ({ row }) => {
         const cls = row.original;
+        // A fixed class's enrollment is per monthly cycle, not a single
+        // count — see its registrations page for cycle-by-cycle numbers.
+        if (cls.class_type === "fijas") return "Ver ciclos";
         return `${cls.current_enrollment}/${cls.max_capacity}`;
       },
     },
@@ -81,8 +91,11 @@ export function getClassesColumns(
       id: "precio",
       header: "Precio",
       cell: ({ row }) => {
-        const price = row.original.price;
-        return price !== null ? `$${price.toFixed(2)}` : "—";
+        const { price, class_type } = row.original;
+        if (price === null) return "—";
+        return class_type === "fijas"
+          ? `$${price.toFixed(2)}/mes`
+          : `$${price.toFixed(2)}`;
       },
     },
     {

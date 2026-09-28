@@ -5,7 +5,15 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/modalidades/clases",
-        destination: "/modalidades/classes",
+        destination: "/modalidades/clases-sueltas",
+      },
+      {
+        source: "/modalidades/classes",
+        destination: "/modalidades/clases-sueltas",
+      },
+      {
+        source: "/modalidades/masterclass",
+        destination: "/modalidades/clases-fijas",
       },
       {
         source: "/admin/clases",

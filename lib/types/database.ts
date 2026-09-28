@@ -10,12 +10,15 @@ export interface Profile {
   updated_at: string;
 }
 
+import type { ClassType } from "@/constants";
+
 export interface DanceClass {
   id: string;
   title: string;
   description: string | null;
   instructor: string;
-  scheduled_date: string;
+  /** Null for class_type = "fijas" (recurring weekly class, no single date). */
+  scheduled_date: string | null;
   start_time: string;
   end_time: string;
   max_capacity: number;
@@ -37,7 +40,9 @@ export interface DanceClass {
   song_title: string | null;
   song_artist: string | null;
   song_youtube_url: string | null;
-  class_type: "clases" | "masterclass" | "proyectos";
+  class_type: ClassType;
+  /** Only set for class_type = "fijas": 0=domingo..6=sábado (matches JS getUTCDay()). */
+  weekday: number | null;
   instructor_instagram_url: string | null;
   use_genre_as_title: boolean;
 }
@@ -63,6 +68,12 @@ export interface Registration {
   paid_amount: number | null;
   promo_pack: number | null;
   purchase_id: string | null;
+  /** Fixed-class ("fijas") purchases only: first day of the purchased monthly cycle. */
+  cycle_month: string | null;
+  /** Sessions covered by this cycle: 4 = full month, less = prorated mid-month join. */
+  cycle_sessions: number | null;
+  /** Date of the first session actually included in this registration's cycle. */
+  cycle_first_session: string | null;
 }
 
 export type PromoDiscountType =
@@ -101,6 +112,8 @@ export interface RegistrationWithClass extends Registration {
     | "id"
     | "title"
     | "instructor"
+    | "class_type"
+    | "weekday"
     | "scheduled_date"
     | "start_time"
     | "end_time"

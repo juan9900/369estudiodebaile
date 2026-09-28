@@ -3,24 +3,13 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useScrollReveal } from "@/lib/hooks/use-scroll-reveal";
+import { CLASS_TYPES, ACTIVE_CLASS_TYPES } from "@/constants";
 
-const CATEGORIES = [
-  {
-    href: "/modalidades/classes",
-    title: "Clases",
-    description: "Aprende, graba, sorpréndete.",
-  },
-  {
-    href: "/modalidades/masterclass",
-    title: "Masterclass",
-    description: "Artistas invitados y coreógrafos de alto nivel.",
-  },
-  {
-    href: "/modalidades/proyectos",
-    title: "Proyectos",
-    description: "Experiencias temporales para vivir de lleno.",
-  },
-] as const;
+const CATEGORIES = ACTIVE_CLASS_TYPES.map((type) => ({
+  href: `/modalidades/${CLASS_TYPES[type].slug}`,
+  title: CLASS_TYPES[type].plural,
+  description: CLASS_TYPES[type].tagline,
+}));
 
 export function ClassesSection() {
   const revealRef = useScrollReveal<HTMLDivElement>({ stagger: true });

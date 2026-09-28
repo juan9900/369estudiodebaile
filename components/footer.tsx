@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { Instagram } from "lucide-react";
+import { CLASS_TYPES } from "@/constants";
 
 const NAV_LINKS = [
   { href: "/", label: "Inicio" },
-  { href: "/modalidades/classes", label: "Clases" },
+  { href: `/modalidades/${CLASS_TYPES.clases.slug}`, label: CLASS_TYPES.clases.plural },
+  { href: `/modalidades/${CLASS_TYPES.fijas.slug}`, label: CLASS_TYPES.fijas.plural },
   { href: "/alquiler", label: "Rentar estudio" },
 ];
 

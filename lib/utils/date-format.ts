@@ -1,6 +1,7 @@
 import { formatTimeAMPM } from "./time-slots";
+import type { MonthKey } from "./fixed-class-cycle";
 
-const DAYS_ES = [
+export const DAYS_ES = [
   "domingo",
   "lunes",
   "martes",
@@ -10,9 +11,9 @@ const DAYS_ES = [
   "sábado",
 ];
 
-const DAYS_ES_SHORT = ["DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"];
+export const DAYS_ES_SHORT = ["DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"];
 
-const MONTHS_ES = [
+export const MONTHS_ES = [
   "enero",
   "febrero",
   "marzo",
@@ -96,4 +97,59 @@ export function formatClassMetaDesktop(
   endTime: string,
 ): string {
   return `${formatDateFull(dateStr)} · ${formatTimeAMPM(startTime)} – ${formatTimeAMPM(endTime)}`;
+}
+
+// ── Fixed classes ("clases fijas") — recurring weekly schedule ──────────
+
+/** "martes" */
+export function getWeekdayName(weekday: number): string {
+  return DAYS_ES[weekday];
+}
+
+/** "MAR" */
+export function getWeekdayNameShort(weekday: number): string {
+  return DAYS_ES_SHORT[weekday];
+}
+
+/** "octubre" from a "YYYY-MM-01" month key */
+export function getMonthLabel(month: MonthKey): string {
+  const [, m] = month.split("-").map(Number);
+  return MONTHS_ES[m - 1];
+}
+
+/** "Octubre 2026" from a "YYYY-MM-01" month key */
+export function formatCycleMonthLabel(month: MonthKey): string {
+  const [y] = month.split("-").map(Number);
+  const label = getMonthLabel(month);
+  return `${label.charAt(0).toUpperCase()}${label.slice(1)} ${y}`;
+}
+
+/** "TODOS LOS MARTES · 6:00 – 7:30 PM" — mirrors formatClassMetaDesktop */
+export function formatWeeklyScheduleFull(
+  weekday: number,
+  startTime: string,
+  endTime: string,
+): string {
+  return `TODOS LOS ${getWeekdayName(weekday).toUpperCase()}S · ${formatTimeAMPM(startTime)} – ${formatTimeAMPM(endTime)}`;
+}
+
+/** "MAR · 6:00 PM" — mirrors formatClassMetaMobile */
+export function formatWeeklyScheduleShort(
+  weekday: number,
+  startTime: string,
+): string {
+  return `${getWeekdayNameShort(weekday)} · ${formatTimeAMPM(startTime)}`;
+}
+
+/** "7, 14, 21 y 28 de octubre" — used in cycle summaries and emails. */
+export function formatSessionDatesList(dates: string[]): string {
+  const days = dates.map((d) => getDateParts(d).dayNum);
+  if (days.length === 0) return "";
+  if (days.length === 1) {
+    return `${days[0]} de ${getDateParts(dates[0]).monthName}`;
+  }
+  const monthName = getDateParts(dates[dates.length - 1]).monthName;
+  const head = days.slice(0, -1).join(", ");
+  const last = days[days.length - 1];
+  return `${head} y ${last} de ${monthName}`;
 }

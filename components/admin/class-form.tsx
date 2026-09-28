@@ -7,7 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
-import { CLASS_LEVELS } from "@/constants";
+import {
+  CLASS_LEVELS,
+  CLASS_TYPES,
+  ACTIVE_CLASS_TYPES,
+  WEEKDAYS_ES,
+  type ActiveClassType,
+} from "@/constants";
 import {
   Select,
   SelectContent,
@@ -43,6 +49,7 @@ export function ClassForm({ initialData }: ClassFormProps) {
     description: initialData?.description ?? "",
     instructor: initialData?.instructor ?? "",
     scheduled_date: initialData?.scheduled_date ?? "",
+    weekday: initialData?.weekday != null ? String(initialData.weekday) : "",
     start_time: initialData?.start_time?.slice(0, 5) ?? "",
     end_time: initialData?.end_time?.slice(0, 5) ?? "",
     max_capacity: initialData?.max_capacity ?? 20,
@@ -52,9 +59,9 @@ export function ClassForm({ initialData }: ClassFormProps) {
     genre: initialData?.genre ?? "",
     level: initialData?.level ?? 1,
     is_active: initialData?.is_active ?? true,
-    class_type:
-      initialData?.class_type ??
-      ("clases" as "clases" | "masterclass" | "proyectos"),
+    class_type: (initialData?.class_type === "masterclass"
+      ? "clases"
+      : (initialData?.class_type ?? "clases")) as ActiveClassType,
     image_url: initialData?.image_url ?? "",
     instructor_photo_url: initialData?.instructor_photo_url ?? "",
     instructor_instagram_url: initialData?.instructor_instagram_url ?? "",
@@ -87,14 +94,38 @@ export function ClassForm({ initialData }: ClassFormProps) {
     fetchSettings();
   }, []);
 
-  // Fetch existing classes when scheduled_date changes
+  const isFixed = form.class_type === "fijas";
+
+  // Fetch existing classes to detect schedule conflicts: by scheduled_date
+  // for dated classes, or by weekday for fixed classes (which repeat every
+  // week and have no scheduled_date to key off).
   useEffect(() => {
-    if (!form.scheduled_date) {
-      setExistingClasses([]);
-      return;
-    }
     async function fetchClasses() {
       const supabase = createClient();
+
+      if (isFixed) {
+        if (form.weekday === "") {
+          setExistingClasses([]);
+          return;
+        }
+        const { data } = await supabase
+          .from("classes")
+          .select("id, start_time, end_time")
+          .eq("class_type", "fijas")
+          .eq("weekday", Number(form.weekday));
+        if (data) {
+          const filtered = initialData?.id
+            ? data.filter((c) => c.id !== initialData.id)
+            : data;
+          setExistingClasses(filtered);
+        }
+        return;
+      }
+
+      if (!form.scheduled_date) {
+        setExistingClasses([]);
+        return;
+      }
       const { data } = await supabase
         .from("classes")
         .select("id, start_time, end_time")
@@ -108,13 +139,12 @@ export function ClassForm({ initialData }: ClassFormProps) {
       }
     }
     fetchClasses();
-  }, [form.scheduled_date, initialData?.id]);
+  }, [isFixed, form.scheduled_date, form.weekday, initialData?.id]);
 
   const allSlots = generateTimeSlots(openingTime, closingTime);
   const occupiedSlots = getOccupiedSlots(existingClasses, allSlots);
 
-  const isFreeSchedule =
-    form.class_type === "masterclass" || form.class_type === "proyectos";
+  const isFreeSchedule = form.class_type !== "clases";
 
   // For normal classes, a start slot is only valid if the full 1-hour block is free
   const startTimeSlots = allSlots.filter((slot) => {
@@ -192,7 +222,8 @@ export function ClassForm({ initialData }: ClassFormProps) {
       title: form.title,
       description: form.description || null,
       instructor: form.instructor,
-      scheduled_date: form.scheduled_date,
+      scheduled_date: isFixed ? null : form.scheduled_date,
+      weekday: isFixed ? Number(form.weekday) : null,
       start_time: form.start_time,
       end_time: form.end_time,
       max_capacity: Number(form.max_capacity),
@@ -281,13 +312,7 @@ export function ClassForm({ initialData }: ClassFormProps) {
       <div className="p-4 bg-muted rounded-lg space-y-2">
         <Label className="font-semibold">Tipo de clase</Label>
         <div className="flex gap-6">
-          {(
-            [
-              { value: "clases", label: "Clase individual" },
-              { value: "masterclass", label: "Masterclass" },
-              { value: "proyectos", label: "Proyecto" },
-            ] as const
-          ).map(({ value, label }) => (
+          {ACTIVE_CLASS_TYPES.map((value) => (
             <label
               key={value}
               className="flex items-center gap-2 cursor-pointer"
@@ -301,6 +326,8 @@ export function ClassForm({ initialData }: ClassFormProps) {
                   setForm((prev) => ({
                     ...prev,
                     class_type: value,
+                    scheduled_date: "",
+                    weekday: "",
                     start_time: "",
                     end_time: "",
                     price:
@@ -312,7 +339,7 @@ export function ClassForm({ initialData }: ClassFormProps) {
                   }))
                 }
               />
-              {label}
+              {CLASS_TYPES[value].singular}
             </label>
           ))}
         </div>
@@ -366,26 +393,58 @@ export function ClassForm({ initialData }: ClassFormProps) {
         />
       </div>
 
-      <div className="grid gap-2">
-        <Label htmlFor="scheduled_date">
-          {form.class_type === "clases" ? "Fecha (Sábado o Domingo)" : "Fecha"}
-        </Label>
-        <Input
-          id="scheduled_date"
-          name="scheduled_date"
-          type="date"
-          value={form.scheduled_date}
-          onChange={handleDateChange}
-          required
-        />
-        {!isFreeSchedule &&
-          form.scheduled_date &&
-          !isValidDayForNormalClass && (
-            <p className="text-sm text-red-500">
-              Las clases normales deben ser sábado o domingo
-            </p>
-          )}
-      </div>
+      {isFixed ? (
+        <div className="grid gap-2">
+          <Label htmlFor="weekday">Día de la semana</Label>
+          <Select
+            value={form.weekday}
+            onValueChange={(val) =>
+              setForm((prev) => ({
+                ...prev,
+                weekday: val,
+                start_time: "",
+                end_time: "",
+              }))
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Seleccionar día" />
+            </SelectTrigger>
+            <SelectContent>
+              {WEEKDAYS_ES.map((label, index) => (
+                <SelectItem key={label} value={String(index)}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            La clase se dicta todas las semanas ese día, sin fecha de fin. Los
+            alumnos reservan ciclos mensuales de 4 clases.
+          </p>
+        </div>
+      ) : (
+        <div className="grid gap-2">
+          <Label htmlFor="scheduled_date">
+            {form.class_type === "clases" ? "Fecha (Sábado o Domingo)" : "Fecha"}
+          </Label>
+          <Input
+            id="scheduled_date"
+            name="scheduled_date"
+            type="date"
+            value={form.scheduled_date}
+            onChange={handleDateChange}
+            required
+          />
+          {!isFreeSchedule &&
+            form.scheduled_date &&
+            !isValidDayForNormalClass && (
+              <p className="text-sm text-red-500">
+                Las clases normales deben ser sábado o domingo
+              </p>
+            )}
+        </div>
+      )}
 
       {isFreeSchedule ? (
         <div className="grid grid-cols-2 gap-4">
@@ -396,7 +455,7 @@ export function ClassForm({ initialData }: ClassFormProps) {
               onValueChange={(val) =>
                 setForm((prev) => ({ ...prev, start_time: val, end_time: "" }))
               }
-              disabled={!form.scheduled_date}
+              disabled={isFixed ? !form.weekday : !form.scheduled_date}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Seleccionar" />
@@ -510,7 +569,9 @@ export function ClassForm({ initialData }: ClassFormProps) {
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="price">Precio ($)</Label>
+          <Label htmlFor="price">
+            {isFixed ? "Precio mensual — 4 clases ($)" : "Precio ($)"}
+          </Label>
           <Input
             id="price"
             name="price"

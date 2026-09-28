@@ -58,13 +58,17 @@ export function ClassesTable({ mode }: ClassesTableProps) {
     let dataQuery = baseQuery().range(from, to);
 
     if (mode === "upcoming") {
+      // Fixed classes ("fijas") have no scheduled_date — they're always
+      // "upcoming" while active, so they're included via an OR instead of
+      // the date filter that would otherwise hide them (NULL never matches
+      // a .gte comparison).
       countQuery = countQuery
-        .gte("scheduled_date", today)
-        .is("cancelled_at", null);
-      dataQuery = dataQuery
-        .gte("scheduled_date", today)
         .is("cancelled_at", null)
-        .order("scheduled_date", { ascending: true });
+        .or(`scheduled_date.gte.${today},class_type.eq.fijas`);
+      dataQuery = dataQuery
+        .is("cancelled_at", null)
+        .or(`scheduled_date.gte.${today},class_type.eq.fijas`)
+        .order("scheduled_date", { ascending: true, nullsFirst: false });
     } else if (mode === "past") {
       countQuery = countQuery
         .lt("scheduled_date", today)

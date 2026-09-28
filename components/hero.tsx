@@ -3,6 +3,7 @@
 import { ArrowRight } from "lucide-react";
 import { LinkButton } from "@/components/ui/link-button";
 import { useEntranceReveal } from "@/lib/hooks/use-scroll-reveal";
+import { CLASS_TYPES } from "@/constants";
 
 export function Hero() {
   const revealRef = useEntranceReveal<HTMLDivElement>();
@@ -33,7 +34,7 @@ export function Hero() {
           todos los niveles.
         </p>
         <div className="mt-[26px] flex items-center gap-4 md:mt-9 md:gap-6">
-          <LinkButton href="/modalidades/classes">
+          <LinkButton href={`/modalidades/${CLASS_TYPES.clases.slug}`}>
             Ver horarios
             <ArrowRight size={18} strokeWidth={1.75} />
           </LinkButton>

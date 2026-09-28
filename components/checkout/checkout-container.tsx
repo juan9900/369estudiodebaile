@@ -5,20 +5,18 @@ import { DanceClass } from "@/lib/types/database";
 import { CheckoutForm } from "./checkout-form";
 import { PromoSelector } from "./promo-selector";
 import { ClassCarousel } from "./class-carousel";
+import { CycleSelector } from "./cycle-selector";
 import { formatDateLong as formatDate } from "@/lib/utils/date-format";
 import { getClassDisplayTitle } from "@/lib/utils/class-display";
 import { usePackageSelection } from "@/lib/hooks/use-package-selection";
 import { useAvailableClasses } from "@/lib/hooks/use-available-classes";
 import { usePromoPacks } from "@/lib/hooks/use-promo-packs";
+import { useCycleOptions, type CycleOption } from "@/lib/hooks/use-cycle-options";
+import { isFixedClass } from "@/lib/utils/class-type";
+import { CLASS_TYPES, type ActiveClassType } from "@/constants";
 import type { PromoPackRow } from "@/lib/types/database";
 
-const titles = {
-  clases: "Clase",
-  masterclass: "Masterclass",
-  proyectos: "Proyecto",
-};
-
-type Step = "promo" | "classes" | "contact" | "payment" | "success";
+type Step = "promo" | "classes" | "cycle" | "contact" | "payment" | "success";
 
 export default function CheckOutContainer({
   danceClass,
@@ -27,11 +25,20 @@ export default function CheckOutContainer({
   danceClass: DanceClass;
   euroRate: number | null;
 }) {
-  const title = titles[danceClass.class_type] || "Clase";
+  const title =
+    CLASS_TYPES[danceClass.class_type as ActiveClassType]?.checkoutTitle ??
+    "Clase";
   const isRegularClass = danceClass.class_type === "clases";
+  const isFixed = isFixedClass(danceClass);
 
-  // Promo packs only apply to regular classes; other modalities skip straight to contact.
-  const [step, setStep] = useState<Step>(isRegularClass ? "promo" : "contact");
+  // Promo packs only apply to regular classes; fixed classes go through the
+  // cycle picker; other modalities skip straight to contact.
+  const [step, setStep] = useState<Step>(
+    isRegularClass ? "promo" : isFixed ? "cycle" : "contact",
+  );
+  const [selectedCycle, setSelectedCycle] = useState<CycleOption | null>(null);
+  const { options: cycleOptions, loading: loadingCycles } =
+    useCycleOptions(danceClass);
 
   // Packs currently valid (active + within their date window), managed by
   // admins at /admin/promo-packs.
@@ -62,13 +69,18 @@ export default function CheckOutContainer({
     setStep(pack.size > 1 ? "classes" : "contact");
   }
 
+  function handleCycleSelect(cycle: CycleOption) {
+    setSelectedCycle(cycle);
+    setStep("contact");
+  }
+
   // Maps the container's step to the 1|2|3 step the form still uses.
   const formStep = step === "payment" ? 2 : step === "success" ? 3 : 1;
 
   return (
     <>
       {/* Class / package summary header */}
-      {step !== "success" && step !== "promo" && (
+      {step !== "success" && step !== "promo" && step !== "cycle" && (
         <div className="text-center mb-8">
           <h1 className="text-5xl font-black uppercase text-white mb-1">
             {danceClass.use_genre_as_title && (
@@ -80,14 +92,23 @@ export default function CheckOutContainer({
             {danceClass.instructor}
           </h2>
           <p className="text-white/60 text-lg">
-            {formatDate(danceClass.scheduled_date)} ·{" "}
-            {danceClass.start_time.slice(0, 5)} –{" "}
+            {isFixed
+              ? selectedCycle?.monthLabel
+              : danceClass.scheduled_date
+                ? formatDate(danceClass.scheduled_date)
+                : ""}{" "}
+            · {danceClass.start_time.slice(0, 5)} –{" "}
             {danceClass.end_time.slice(0, 5)}
           </p>
           {packSelection.pack && packSelection.pack.size > 1 ? (
             <p className="text-white text-xl font-semibold mt-1">
               Paquete de {packSelection.pack.size} clases · $
               <span className="font-black">{packSelection.total}</span>
+            </p>
+          ) : isFixed && selectedCycle ? (
+            <p className="text-white text-xl font-semibold mt-1">
+              {selectedCycle.note} · $
+              <span className="font-black">{selectedCycle.price}</span>
             </p>
           ) : (
             danceClass.price != null && (
@@ -129,6 +150,15 @@ export default function CheckOutContainer({
         />
       )}
 
+      {step === "cycle" && (
+        <CycleSelector
+          options={cycleOptions}
+          loading={loadingCycles}
+          onSelect={handleCycleSelect}
+          onBack={() => window.history.back()}
+        />
+      )}
+
       {(step === "contact" || step === "payment" || step === "success") && (
         <CheckoutForm
           step={formStep}
@@ -139,21 +169,24 @@ export default function CheckOutContainer({
           danceClass={danceClass}
           euroRate={euroRate}
           selectedClasses={packSelection.selected}
-          total={packSelection.total ?? danceClass.price}
-          perClassAmount={packSelection.perClassAmount ?? danceClass.price}
+          total={isFixed ? selectedCycle?.price : (packSelection.total ?? danceClass.price)}
+          perClassAmount={isFixed ? selectedCycle?.price : (packSelection.perClassAmount ?? danceClass.price)}
           perClassAmounts={packSelection.perClassAmounts}
           discountApplied={packSelection.discountApplied}
           discountFlags={packSelection.discountFlags}
           promoPack={packSelection.pack?.size ?? null}
+          cycle={selectedCycle}
           onBackFromContact={
-            isRegularClass && hasOtherClasses
-              ? () =>
-                  setStep(
-                    packSelection.pack && packSelection.pack.size > 1
-                      ? "classes"
-                      : "promo",
-                  )
-              : undefined
+            isFixed
+              ? () => setStep("cycle")
+              : isRegularClass && hasOtherClasses
+                ? () =>
+                    setStep(
+                      packSelection.pack && packSelection.pack.size > 1
+                        ? "classes"
+                        : "promo",
+                    )
+                : undefined
           }
         />
       )}

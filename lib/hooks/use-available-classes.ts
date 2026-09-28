@@ -4,17 +4,26 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { DanceClass } from "@/lib/types/database";
 
+/** "clases" and "proyectos" always have a single scheduled_date; "fijas" doesn't. */
+export type DatedClassType = "clases" | "proyectos";
+
+/** A DanceClass known to have a concrete scheduled_date (never "fijas"). */
+export type DatedDanceClass = DanceClass & { scheduled_date: string };
+
 /**
- * Fetches active, upcoming, non-full classes of a given type — same
- * query/filtering rules as `ClassesList` — optionally excluding one class
- * (e.g. the class the user already selected before building a promo pack).
+ * Fetches active, upcoming, non-full classes of a given dated type ("clases"
+ * or "proyectos") — same query/filtering rules as `ClassesList` — optionally
+ * excluding one class (e.g. the class the user already selected before
+ * building a promo pack). Fixed classes ("fijas") have their own hooks
+ * (`use-fixed-classes.ts`, `use-cycle-options.ts`) since they have no single
+ * scheduled_date to filter/sort by.
  */
 export function useAvailableClasses(
-  classType: DanceClass["class_type"],
+  classType: DatedClassType,
   excludeId?: string,
   enabled: boolean = true,
 ) {
-  const [classes, setClasses] = useState<DanceClass[]>([]);
+  const [classes, setClasses] = useState<DatedDanceClass[]>([]);
   const [loading, setLoading] = useState(enabled);
 
   useEffect(() => {
@@ -46,7 +55,7 @@ export function useAvailableClasses(
           ...c,
           current_enrollment:
             (c.registrations as { count: number }[])?.[0]?.count ?? 0,
-        })) as DanceClass[];
+        })) as DatedDanceClass[];
         const now = new Date();
         setClasses(
           mapped.filter((c) => {

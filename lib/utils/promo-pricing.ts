@@ -1,4 +1,5 @@
 import type { PromoPackRow } from "@/lib/types/database";
+import { roundCents } from "@/lib/utils/money";
 
 /**
  * Promo pack pricing for regular classes ("clases"). Packs are managed by
@@ -11,11 +12,6 @@ import type { PromoPackRow } from "@/lib/types/database";
  *   (e.g. size=6, value=1 → "paga 5 y la #6 sale gratis").
  * - "fixed_price": `discount_value` IS the total to charge, no math involved.
  */
-
-/** Rounds to the nearest cent to avoid floating point noise (e.g. 4.999999). */
-function roundCents(n: number): number {
-  return Math.round(n * 100) / 100;
-}
 
 /** Total USD to charge for a given pack, or null if the class has no price yet. */
 export function getPackageTotal(

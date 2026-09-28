@@ -6,10 +6,12 @@ import { usePathname } from "next/navigation";
 import { Menu, X, ChevronRight, Instagram } from "lucide-react";
 import { gsap } from "gsap";
 import { useMobileMenu } from "@/lib/hooks/use-mobile-menu";
+import { CLASS_TYPES } from "@/constants";
 
 const NAV_LINKS = [
   { href: "/", label: "Inicio" },
-  { href: "/modalidades/classes", label: "Clases" },
+  { href: `/modalidades/${CLASS_TYPES.clases.slug}`, label: CLASS_TYPES.clases.plural },
+  { href: `/modalidades/${CLASS_TYPES.fijas.slug}`, label: CLASS_TYPES.fijas.plural },
   { href: "/alquiler", label: "Rentar estudio" },
 ];
 
@@ -24,7 +26,7 @@ export const Navbar = () => {
   const panelRef = useRef<HTMLDivElement>(null);
   const onAlquiler = pathname.startsWith("/alquiler");
   const ctaLabel = onAlquiler ? "Consultar" : "Reservar";
-  const ctaHref = onAlquiler ? "#contacto" : "/modalidades/classes";
+  const ctaHref = onAlquiler ? "#contacto" : `/modalidades/${CLASS_TYPES.clases.slug}`;
 
   useEffect(() => {
     const el = panelRef.current;
