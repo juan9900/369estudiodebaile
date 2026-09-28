@@ -90,26 +90,22 @@ CREATE INDEX IF NOT EXISTS idx_reg_cycle ON registrations(class_id, cycle_month)
   WHERE cycle_month IS NOT NULL;
 
 -- ------------------------------------------------------------
--- 4. Unique indexes must allow the same student to buy the same fixed
--- class again in a later month. The existing partial unique indexes
--- (migration 003) key on (user_id, class_id) / (class_id, contact_email)
--- alone, which would block a second month's purchase.
+-- 4. Unique index must allow the same student to buy the same fixed
+-- class again in a later month.
+--
+-- The live database has no `user_id` column on registrations (unlike
+-- migration 003's design) — registrations are keyed by contact_email only,
+-- no auth linkage exists. So there is only a guest-style unique index here,
+-- matching how the live app actually works, not the original multi-user
+-- design.
 --
 -- COALESCE is required: Postgres treats NULLs as distinct in unique
 -- indexes, so appending cycle_month directly would stop deduplicating
 -- clases/proyectos registrations (which always have cycle_month IS NULL).
--- These new indexes are strictly weaker than the old ones, so recreating
--- them can never fail against existing data.
 -- ------------------------------------------------------------
-DROP INDEX IF EXISTS idx_reg_auth_unique;
-CREATE UNIQUE INDEX idx_reg_auth_unique
-  ON registrations (user_id, class_id, COALESCE(cycle_month, DATE '1900-01-01'))
-  WHERE user_id IS NOT NULL;
-
 DROP INDEX IF EXISTS idx_reg_guest_unique;
 CREATE UNIQUE INDEX idx_reg_guest_unique
-  ON registrations (class_id, contact_email, COALESCE(cycle_month, DATE '1900-01-01'))
-  WHERE user_id IS NULL;
+  ON registrations (class_id, contact_email, COALESCE(cycle_month, DATE '1900-01-01'));
 
 -- ------------------------------------------------------------
 -- 5. Per-cycle capacity view.
