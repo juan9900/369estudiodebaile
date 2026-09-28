@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Clock, Users } from "lucide-react";
+import { Clock } from "lucide-react";
 import { getClassDisplayTitle } from "@/lib/utils/class-display";
 import { formatTimeAMPM } from "@/lib/utils/time-slots";
 import { getWeekdayNameShort, getWeekdayName } from "@/lib/utils/date-format";
@@ -41,8 +41,6 @@ export function FixedClassesList() {
           </p>
         ) : (
           classes.map((cls) => {
-            const nextCycle = cls.cycles[cls.cycles.length - 1];
-
             return (
               <Link
                 key={cls.id}
@@ -74,9 +72,6 @@ export function FixedClassesList() {
                       {cls.price !== null && (
                         <p>Precio mensual: ${cls.price} (4 clases)</p>
                       )}
-                      {nextCycle?.spotsLeft != null && (
-                        <p>Cupos disponibles: {nextCycle.spotsLeft}</p>
-                      )}
                     </div>
                     <span className="mt-3 inline-block rounded-sm bg-vino px-4 py-2 text-[13px] font-bold text-white transition-colors group-hover:bg-vino-hover md:hidden">
                       Reservar
@@ -100,12 +95,6 @@ export function FixedClassesList() {
                     {cls.price !== null && (
                       <span className="text-sm text-muted2-2">
                         ${cls.price}/mes · 4 clases
-                      </span>
-                    )}
-                    {nextCycle?.spotsLeft != null && (
-                      <span className="flex items-center gap-1.5 text-sm text-muted2-2">
-                        <Users size={14} strokeWidth={1.75} />
-                        {nextCycle.spotsLeft} cupos
                       </span>
                     )}
                   </div>
