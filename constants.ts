@@ -45,7 +45,9 @@ export type ActiveClassType = (typeof ACTIVE_CLASS_TYPES)[number];
 /** "masterclass" is legacy: archived rows only, never offered or rendered. */
 export type ClassType = ActiveClassType | "masterclass";
 
-/** Sessions in a fixed-class ("fijas") monthly cycle — see class-schedule docs. */
+/** Occurrences of EACH weekly slot included in a fixed-class ("fijas") rolling
+ * cycle — a class with 3 weekly slots sells cycles of 3 * SESSIONS_PER_CYCLE
+ * sessions. See lib/utils/fixed-class-cycle.ts. */
 export const SESSIONS_PER_CYCLE = 4;
 
 /** 0 = domingo … 6 = sábado, matching JS Date.getUTCDay(). */

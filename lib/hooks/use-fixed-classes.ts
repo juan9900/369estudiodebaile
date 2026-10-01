@@ -2,40 +2,25 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { DanceClass } from "@/lib/types/database";
-import { formatCycleMonthLabel } from "@/lib/utils/date-format";
-import {
-  addMonthsToKey,
-  getCurrentMonthKey,
-  getCycleSessionDates,
-  getRemainingSessionDates,
-  type MonthKey,
-} from "@/lib/utils/fixed-class-cycle";
-import { getCyclePrice } from "@/lib/utils/fixed-class-pricing";
+import type { DanceClass, FixedClassSlot } from "@/lib/types/database";
+import { buildCycleWindow, getNextCycleStart, type CycleWindow } from "@/lib/utils/fixed-class-cycle";
+import { sortSlots } from "@/lib/utils/fixed-class-slots";
 
-export interface FixedClassCycle {
-  month: MonthKey;
-  monthLabel: string;
-  sessions: string[];
-  remaining: string[];
-  enrolled: number;
-  spotsLeft: number | null;
-  price: number | null;
-  isProrated: boolean;
-}
-
-export interface FixedClassWithCycles extends DanceClass {
-  cycles: FixedClassCycle[];
+export interface FixedClassWithSlots extends DanceClass {
+  slots: FixedClassSlot[];
+  /** The cycle a student joining right now would get, or null if the class has no slots. */
+  nextCycle: CycleWindow | null;
 }
 
 /**
- * Fetches all active fixed classes ("fijas") with their current + next
- * month cycle availability, for the public listing. Unlike dated classes,
- * fijas have no scheduled_date to filter/sort by — they're always "upcoming"
- * while active, and are sorted by weekday then start time.
+ * Fetches all active, published fixed classes ("fijas") with their weekly
+ * slots and next available cycle, for the public listing. Unlike dated
+ * classes, fijas have no scheduled_date to filter/sort by — they're always
+ * "upcoming" while active and published, and are sorted by their earliest
+ * slot (classes.weekday/start_time, kept in sync by a DB trigger).
  */
 export function useFixedClasses() {
-  const [classes, setClasses] = useState<FixedClassWithCycles[]>([]);
+  const [classes, setClasses] = useState<FixedClassWithSlots[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,12 +29,14 @@ export function useFixedClasses() {
     async function fetchFixedClasses() {
       setLoading(true);
       const supabase = createClient();
+      const nowIso = new Date().toISOString();
 
       const { data } = await supabase
         .from("classes")
         .select("*")
         .eq("is_active", true)
-        .eq("class_type", "fijas");
+        .eq("class_type", "fijas")
+        .or(`published_at.is.null,published_at.lte.${nowIso}`);
 
       if (!active) return;
 
@@ -60,81 +47,39 @@ export function useFixedClasses() {
         return;
       }
 
-      const currentMonth = getCurrentMonthKey();
-      const nextMonth = addMonthsToKey(currentMonth, 1);
-
-      const { data: enrollmentRows } = await supabase
-        .from("fixed_class_cycle_enrollment")
-        .select("class_id, cycle_month, enrolled")
+      const { data: slotRows } = await supabase
+        .from("fixed_class_slots")
+        .select("*")
         .in(
           "class_id",
           fetched.map((c) => c.id),
-        )
-        .in("cycle_month", [currentMonth, nextMonth]);
+        );
 
       if (!active) return;
 
-      const enrollmentByKey = new Map<string, number>();
-      for (const row of (enrollmentRows as
-        | { class_id: string; cycle_month: string; enrolled: number }[]
-        | null) ?? []) {
-        enrollmentByKey.set(`${row.class_id}:${row.cycle_month}`, row.enrolled);
+      const slotsByClass = new Map<string, FixedClassSlot[]>();
+      for (const slot of (slotRows as FixedClassSlot[]) ?? []) {
+        if (!slotsByClass.has(slot.class_id)) slotsByClass.set(slot.class_id, []);
+        slotsByClass.get(slot.class_id)!.push(slot);
       }
 
-      const withCycles: FixedClassWithCycles[] = fetched
-        .filter((cls) => cls.weekday != null)
+      const withSlots: FixedClassWithSlots[] = fetched
         .map((cls) => {
-          const weekday = cls.weekday as number;
-          const cycles: FixedClassCycle[] = [];
-
-          const remaining = getRemainingSessionDates(
-            weekday,
-            currentMonth,
-            cls.start_time,
-          );
-          if (remaining.length > 0) {
-            const enrolled = enrollmentByKey.get(`${cls.id}:${currentMonth}`) ?? 0;
-            const spotsLeft =
-              cls.max_capacity != null
-                ? Math.max(cls.max_capacity - enrolled, 0)
-                : null;
-            cycles.push({
-              month: currentMonth,
-              monthLabel: formatCycleMonthLabel(currentMonth),
-              sessions: getCycleSessionDates(weekday, currentMonth),
-              remaining,
-              enrolled,
-              spotsLeft,
-              price: getCyclePrice(cls.price, remaining.length),
-              isProrated: true,
-            });
-          }
-
-          const nextSessions = getCycleSessionDates(weekday, nextMonth);
-          const nextEnrolled = enrollmentByKey.get(`${cls.id}:${nextMonth}`) ?? 0;
-          const nextSpotsLeft =
-            cls.max_capacity != null
-              ? Math.max(cls.max_capacity - nextEnrolled, 0)
-              : null;
-          cycles.push({
-            month: nextMonth,
-            monthLabel: formatCycleMonthLabel(nextMonth),
-            sessions: nextSessions,
-            remaining: nextSessions,
-            enrolled: nextEnrolled,
-            spotsLeft: nextSpotsLeft,
-            price: getCyclePrice(cls.price, nextSessions.length),
-            isProrated: false,
-          });
-
-          return { ...cls, cycles };
+          const slots = sortSlots(slotsByClass.get(cls.id) ?? []);
+          const nextStart = getNextCycleStart(slots, new Date(), cls.starts_on);
+          return {
+            ...cls,
+            slots,
+            nextCycle: nextStart ? buildCycleWindow(slots, nextStart) : null,
+          };
         })
+        .filter((cls) => cls.slots.length > 0)
         .sort((a, b) => {
           if (a.weekday !== b.weekday) return (a.weekday ?? 0) - (b.weekday ?? 0);
           return a.start_time.localeCompare(b.start_time);
         });
 
-      setClasses(withCycles);
+      setClasses(withSlots);
       setLoading(false);
     }
 

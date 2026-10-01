@@ -8,11 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PaymentInfo } from "@/components/checkout/payment-info";
 import { ArrowRight, BadgeCheck, SquareCheck } from "lucide-react";
-import { Resend } from "resend";
 import Link from "next/link";
 import { buildRegistrationEmails } from "@/lib/utils/checkout-notifications";
-import { formatSessionDatesList } from "@/lib/utils/date-format";
-import { formatTimeAMPM } from "@/lib/utils/time-slots";
+import { formatCycleRange, formatSessionDatesList } from "@/lib/utils/date-format";
+import { useFixedClassSlots } from "@/lib/hooks/use-fixed-class-slots";
+import { formatSlotsFull } from "@/lib/utils/fixed-class-slots";
 import type { CycleOption } from "@/lib/hooks/use-cycle-options";
 
 const PAYMENT_OPTIONS: { value: PaymentMethod; label: string }[] = [
@@ -72,6 +72,8 @@ export function CheckoutForm({
     discountFlags && discountFlags.length === classesToRegister.length
       ? discountFlags[i]
       : discountApplied;
+  const { slotsByClass } = useFixedClassSlots(cycle ? [danceClass.id] : []);
+  const cycleSlots = cycle ? (slotsByClass.get(danceClass.id) ?? []) : [];
   // Contact fields
   const [name, setName] = useState("");
   const [lastname, setLastname] = useState("");
@@ -135,11 +137,9 @@ export function CheckoutForm({
           className: cls.title,
           instructor: cls.instructor,
           day: cycle
-            ? `${formatSessionDatesList(cycle.sessions)} (${cycle.sessionCount} clases · ${cycle.monthLabel})`
+            ? `${formatSessionDatesList(cycle.sessions.map((s) => s.date))} (${cycle.sessionCount} clases · ${formatCycleRange(cycle.startDate, cycle.endDate)})`
             : (cls.scheduled_date ?? ""),
-          hour: cycle
-            ? `Todas las semanas, ${formatTimeAMPM(cls.start_time)}`
-            : cls.start_time,
+          hour: cycle ? formatSlotsFull(cycleSlots) : cls.start_time,
           price: amountForIndex(i) ?? null,
         })),
         totalPrice: chargeTotal,
@@ -193,6 +193,26 @@ export function CheckoutForm({
         .join(" | ");
     }
 
+    // Rolling cycles make capacity races more likely than calendar-month
+    // ones (every student can start on a different day), so re-check right
+    // before inserting rather than trusting the count the picker loaded.
+    if (cycle) {
+      const { data: activeWindows } = await supabase
+        .from("fixed_class_enrollment_windows")
+        .select("cycle_start_date, cycle_end_date")
+        .eq("class_id", danceClass.id);
+      const enrolled = (
+        (activeWindows as { cycle_start_date: string; cycle_end_date: string }[]) ?? []
+      ).filter(
+        (w) => cycle.startDate <= w.cycle_end_date && cycle.endDate >= w.cycle_start_date,
+      ).length;
+      if (danceClass.max_capacity != null && enrolled >= danceClass.max_capacity) {
+        setError("Ese ciclo ya no tiene cupos disponibles. Elige otra fecha de inicio.");
+        setLoading(false);
+        return;
+      }
+    }
+
     const purchaseId = crypto.randomUUID();
 
     const rows = classesToRegister.map((cls, i) => ({
@@ -206,16 +226,16 @@ export function CheckoutForm({
       contact_lastname: lastname.trim(),
       contact_phone: phone.trim(),
       contact_email: email.trim(),
-      // A fixed-class cycle is a simple monthly price, never a promo
-      // discount — discount_applied/promo_pack stay false/null so the
-      // admin's discount reporting isn't polluted by prorated cycles.
+      // A fixed-class cycle is a flat price, never a promo discount —
+      // discount_applied/promo_pack stay false/null so the admin's
+      // discount reporting isn't polluted by cycle purchases.
       discount_applied: cycle ? false : discountForIndex(i),
       paid_amount: cycle ? cycle.price : amountForIndex(i),
       promo_pack: cycle ? null : discountApplied ? promoPack : null,
       purchase_id: purchaseId,
-      cycle_month: cycle ? cycle.month : null,
+      cycle_start_date: cycle ? cycle.startDate : null,
+      cycle_end_date: cycle ? cycle.endDate : null,
       cycle_sessions: cycle ? cycle.sessionCount : null,
-      cycle_first_session: cycle ? (cycle.sessions[0] ?? null) : null,
     }));
 
     const { error: insertError } = await supabase
@@ -226,7 +246,7 @@ export function CheckoutForm({
       setError(
         insertError.code === "23505"
           ? cycle
-            ? "Ya tienes una reserva para esta clase en ese mes."
+            ? "Ya tienes una reserva para esta clase en ese ciclo."
             : classesToRegister.length > 1
               ? "Ya tienes una reserva en una de las clases seleccionadas."
               : "Ya existe una reserva con este correo para esta clase."

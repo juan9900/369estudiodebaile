@@ -23,6 +23,7 @@ export default async function CheckoutPage({
       .in("registrations.status", ["confirmed", "pending"])
       .eq("id", classId)
       .eq("is_active", true)
+      .or(`published_at.is.null,published_at.lte.${new Date().toISOString()}`)
       .single(),
   ]);
 
@@ -33,7 +34,15 @@ export default async function CheckoutPage({
     current_enrollment:
       (data.registrations as { count: number }[])?.[0]?.count ?? 0,
   } as DanceClass;
-  const spotsLeft = danceClass.max_capacity - danceClass.current_enrollment;
+  // For "fijas", registrations never expire from this global count (a
+  // single class accumulates registrations forever across rolling cycles),
+  // so it can't represent "is this class full right now" — the real
+  // per-cycle capacity check happens in useCycleOptions/CycleSelector and
+  // is re-verified in checkout-form before the insert.
+  const isFixed = danceClass.class_type === "fijas";
+  const spotsLeft = isFixed
+    ? null
+    : danceClass.max_capacity - danceClass.current_enrollment;
 
   let euroRate: number | null = null;
   try {
@@ -48,7 +57,7 @@ export default async function CheckoutPage({
     // API unavailable — euroRate stays null
   }
 
-  if (spotsLeft <= 0) {
+  if (spotsLeft !== null && spotsLeft <= 0) {
     return (
       <div className="min-h-screen bg-primary flex items-center justify-center px-6">
         <div className="max-w-md w-full text-center">

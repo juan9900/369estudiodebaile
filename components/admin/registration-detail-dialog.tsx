@@ -22,7 +22,8 @@ import type {
 } from "@/lib/types/database";
 import { createClient } from "@/lib/supabase/client";
 import { notifyPackStatusIfResolved } from "@/lib/utils/registration-status-notify";
-import { formatCycleMonthLabel } from "@/lib/utils/date-format";
+import { formatCycleRange } from "@/lib/utils/date-format";
+import { formatSlotsFull } from "@/lib/utils/fixed-class-slots";
 
 const paymentMethodLabels: Record<string, string> = {
   zelle: "Zelle",
@@ -116,10 +117,15 @@ export function RegistrationDetailDialog({
                     instructor: registration.classes.instructor,
                     day:
                       registration.classes.class_type === "fijas" &&
-                      registration.cycle_month
-                        ? `${formatCycleMonthLabel(registration.cycle_month)} · ${registration.cycle_sessions ?? 4} clases`
+                      registration.cycle_start_date &&
+                      registration.cycle_end_date
+                        ? `${formatCycleRange(registration.cycle_start_date, registration.cycle_end_date)} · ${registration.cycle_sessions ?? "—"} clases`
                         : (registration.classes.scheduled_date ?? ""),
-                    hour: registration.classes.start_time,
+                    hour:
+                      registration.classes.class_type === "fijas" &&
+                      registration.classes.fixed_class_slots?.length
+                        ? formatSlotsFull(registration.classes.fixed_class_slots)
+                        : registration.classes.start_time,
                     price: registration.classes.price,
                     status: selectedStatus,
                   },
@@ -161,8 +167,8 @@ export function RegistrationDetailDialog({
 
   const cls = registration.classes;
   const dateStr =
-    cls.class_type === "fijas" && registration.cycle_month
-      ? `${formatCycleMonthLabel(registration.cycle_month)} · ${registration.cycle_sessions ?? 4} clases`
+    cls.class_type === "fijas" && registration.cycle_start_date && registration.cycle_end_date
+      ? `${formatCycleRange(registration.cycle_start_date, registration.cycle_end_date)} · ${registration.cycle_sessions ?? "—"} clases`
       : cls.scheduled_date
         ? new Date(cls.scheduled_date + "T00:00:00").toLocaleDateString(
             "es-ES",
@@ -235,7 +241,10 @@ export function RegistrationDetailDialog({
           </Section>
           <Row label="Instructor">{cls.instructor}</Row>
           <Row label="Fecha y hora">
-            {dateStr} · {cls.start_time} – {cls.end_time}
+            {dateStr} ·{" "}
+            {cls.class_type === "fijas" && cls.fixed_class_slots?.length
+              ? formatSlotsFull(cls.fixed_class_slots)
+              : `${cls.start_time} – ${cls.end_time}`}
           </Row>
 
           {/* Separador */}

@@ -6,12 +6,14 @@ import { CheckoutForm } from "./checkout-form";
 import { PromoSelector } from "./promo-selector";
 import { ClassCarousel } from "./class-carousel";
 import { CycleSelector } from "./cycle-selector";
-import { formatDateLong as formatDate } from "@/lib/utils/date-format";
+import { formatDateLong as formatDate, formatCycleRange } from "@/lib/utils/date-format";
 import { getClassDisplayTitle } from "@/lib/utils/class-display";
 import { usePackageSelection } from "@/lib/hooks/use-package-selection";
 import { useAvailableClasses } from "@/lib/hooks/use-available-classes";
 import { usePromoPacks } from "@/lib/hooks/use-promo-packs";
 import { useCycleOptions, type CycleOption } from "@/lib/hooks/use-cycle-options";
+import { useFixedClassSlots } from "@/lib/hooks/use-fixed-class-slots";
+import { formatSlotsFull } from "@/lib/utils/fixed-class-slots";
 import { isFixedClass } from "@/lib/utils/class-type";
 import { CLASS_TYPES, type ActiveClassType } from "@/constants";
 import type { PromoPackRow } from "@/lib/types/database";
@@ -39,6 +41,8 @@ export default function CheckOutContainer({
   const [selectedCycle, setSelectedCycle] = useState<CycleOption | null>(null);
   const { options: cycleOptions, loading: loadingCycles } =
     useCycleOptions(danceClass);
+  const { slotsByClass } = useFixedClassSlots(isFixed ? [danceClass.id] : []);
+  const fixedSlots = slotsByClass.get(danceClass.id) ?? [];
 
   // Packs currently valid (active + within their date window), managed by
   // admins at /admin/promo-packs.
@@ -93,12 +97,12 @@ export default function CheckOutContainer({
           </h2>
           <p className="text-white/60 text-lg">
             {isFixed
-              ? selectedCycle?.monthLabel
+              ? selectedCycle
+                ? formatCycleRange(selectedCycle.startDate, selectedCycle.endDate)
+                : formatSlotsFull(fixedSlots)
               : danceClass.scheduled_date
-                ? formatDate(danceClass.scheduled_date)
-                : ""}{" "}
-            · {danceClass.start_time.slice(0, 5)} –{" "}
-            {danceClass.end_time.slice(0, 5)}
+                ? `${formatDate(danceClass.scheduled_date)} · ${danceClass.start_time.slice(0, 5)} – ${danceClass.end_time.slice(0, 5)}`
+                : ""}
           </p>
           {packSelection.pack && packSelection.pack.size > 1 ? (
             <p className="text-white text-xl font-semibold mt-1">

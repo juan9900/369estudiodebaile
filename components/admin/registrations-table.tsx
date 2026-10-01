@@ -46,7 +46,7 @@ export function RegistrationsTable({ classId }: RegistrationsTableProps) {
     let dataQuery = supabase
       .from("registrations")
       .select(
-        "*, classes(id, title, instructor, class_type, weekday, scheduled_date, start_time, end_time, price)",
+        "*, classes(id, title, instructor, class_type, weekday, scheduled_date, start_time, end_time, price, starts_on, fixed_class_slots(weekday, start_time, end_time))",
       )
       .order("created_at", { ascending: false })
       .range(from, to);

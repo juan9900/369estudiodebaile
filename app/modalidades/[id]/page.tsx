@@ -19,6 +19,7 @@ export default async function ClassDetailPage({
     .in("registrations.status", ["confirmed", "pending"])
     .eq("id", classId)
     .eq("is_active", true)
+    .or(`published_at.is.null,published_at.lte.${new Date().toISOString()}`)
     .single();
 
   if (!data) notFound();

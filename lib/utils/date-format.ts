@@ -1,5 +1,4 @@
 import { formatTimeAMPM } from "./time-slots";
-import type { MonthKey } from "./fixed-class-cycle";
 
 export const DAYS_ES = [
   "domingo",
@@ -81,6 +80,17 @@ export function formatDateShortLabel(dateStr: string): string {
   return `${monthNameShort} · ${dayNameShort}`;
 }
 
+/**
+ * "YYYY-MM-DDTHH:MM" for a `<input type="datetime-local">`, from an ISO
+ * timestamp, rendered in the viewer's own local timezone (same timezone
+ * that datetime-local input values are always interpreted in).
+ */
+export function toDatetimeLocalValue(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 /** "SÁB 8 AGO · 10:30 AM" — class detail metadata, mobile */
 export function formatClassMetaMobile(
   dateStr: string,
@@ -99,7 +109,10 @@ export function formatClassMetaDesktop(
   return `${formatDateFull(dateStr)} · ${formatTimeAMPM(startTime)} – ${formatTimeAMPM(endTime)}`;
 }
 
-// ── Fixed classes ("clases fijas") — recurring weekly schedule ──────────
+// ── Fixed classes ("clases fijas") — weekly schedule + rolling cycles ───
+// Per-slot formatters (several weekdays, each with its own time range) live
+// in lib/utils/fixed-class-slots.ts. This file keeps the generic date-list
+// and date-range formatters shared with dated classes.
 
 /** "martes" */
 export function getWeekdayName(weekday: number): string {
@@ -111,45 +124,34 @@ export function getWeekdayNameShort(weekday: number): string {
   return DAYS_ES_SHORT[weekday];
 }
 
-/** "octubre" from a "YYYY-MM-01" month key */
-export function getMonthLabel(month: MonthKey): string {
-  const [, m] = month.split("-").map(Number);
-  return MONTHS_ES[m - 1];
-}
-
-/** "Octubre 2026" from a "YYYY-MM-01" month key */
-export function formatCycleMonthLabel(month: MonthKey): string {
-  const [y] = month.split("-").map(Number);
-  const label = getMonthLabel(month);
-  return `${label.charAt(0).toUpperCase()}${label.slice(1)} ${y}`;
-}
-
-/** "TODOS LOS MARTES · 6:00 – 7:30 PM" — mirrors formatClassMetaDesktop */
-export function formatWeeklyScheduleFull(
-  weekday: number,
-  startTime: string,
-  endTime: string,
-): string {
-  return `TODOS LOS ${getWeekdayName(weekday).toUpperCase()}S · ${formatTimeAMPM(startTime)} – ${formatTimeAMPM(endTime)}`;
-}
-
-/** "MAR · 6:00 PM" — mirrors formatClassMetaMobile */
-export function formatWeeklyScheduleShort(
-  weekday: number,
-  startTime: string,
-): string {
-  return `${getWeekdayNameShort(weekday)} · ${formatTimeAMPM(startTime)}`;
-}
-
-/** "7, 14, 21 y 28 de octubre" — used in cycle summaries and emails. */
+/**
+ * "26 de septiembre; 1, 3, 8, 10 de octubre" — a cycle's session dates,
+ * grouped by month since a rolling cycle routinely crosses a month
+ * boundary (unlike the old calendar-month cycles, which never did).
+ */
 export function formatSessionDatesList(dates: string[]): string {
-  const days = dates.map((d) => getDateParts(d).dayNum);
-  if (days.length === 0) return "";
-  if (days.length === 1) {
-    return `${days[0]} de ${getDateParts(dates[0]).monthName}`;
+  if (dates.length === 0) return "";
+
+  const byMonth = new Map<string, number[]>();
+  for (const date of dates) {
+    const { monthName, dayNum } = getDateParts(date);
+    if (!byMonth.has(monthName)) byMonth.set(monthName, []);
+    byMonth.get(monthName)!.push(dayNum);
   }
-  const monthName = getDateParts(dates[dates.length - 1]).monthName;
-  const head = days.slice(0, -1).join(", ");
-  const last = days[days.length - 1];
-  return `${head} y ${last} de ${monthName}`;
+
+  return [...byMonth.entries()]
+    .map(([monthName, days]) => {
+      if (days.length === 1) return `${days[0]} de ${monthName}`;
+      const head = days.slice(0, -1).join(", ");
+      const last = days[days.length - 1];
+      return `${head} y ${last} de ${monthName}`;
+    })
+    .join("; ");
+}
+
+/** "26 sep – 17 oct" — a cycle's overall date range, for compact summaries. */
+export function formatCycleRange(startDate: string, endDate: string): string {
+  const start = getDateParts(startDate);
+  const end = getDateParts(endDate);
+  return `${start.dayNum} ${start.monthNameShort.toLowerCase()} – ${end.dayNum} ${end.monthNameShort.toLowerCase()}`;
 }

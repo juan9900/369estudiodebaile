@@ -2,7 +2,8 @@ import EmailAdminUnpaidReminder from "@/components/emails/email-admin-unpaid-rem
 import { createAdminClient } from "@/lib/supabase/admin";
 import { NextRequest } from "next/server";
 import { Resend } from "resend";
-import { getCycleSessionDates } from "@/lib/utils/fixed-class-cycle";
+import { buildCycleWindow } from "@/lib/utils/fixed-class-cycle";
+import { addDaysToDateStr, getCaracasToday } from "@/lib/utils/caracas-date";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -16,16 +17,9 @@ export async function GET(req: NextRequest) {
 
   const supabase = createAdminClient();
 
-  // Compute target dates: tomorrow, +2 days, +3 days in America/Caracas timezone
-  const getCaracasDate = (daysOffset: number) => {
-    const d = new Date(
-      new Date().toLocaleString("en-US", { timeZone: "America/Caracas" }),
-    );
-    d.setDate(d.getDate() + daysOffset);
-    return d.toISOString().split("T")[0]; // YYYY-MM-DD
-  };
-
-  const targetDates = [1, 2, 3].map(getCaracasDate);
+  // Target dates: tomorrow, +2 days, +3 days in America/Caracas.
+  const today = getCaracasToday();
+  const targetDates = [1, 2, 3].map((n) => addDaysToDateStr(today, n));
 
   const { data: datedRegistrations, error } = await supabase
     .from("registrations")
@@ -57,10 +51,11 @@ export async function GET(req: NextRequest) {
     return Response.json({ error: error.message }, { status: 500 });
   }
 
-  // Fixed classes ("fijas") have no scheduled_date — their next session
-  // date is derived from classes.weekday + registrations.cycle_month, so
-  // they need a separate query + in-memory filter against targetDates
-  // instead of the `.in("classes.scheduled_date", ...)` filter above.
+  // Fixed classes ("fijas") have no scheduled_date — each registration's
+  // next session date is derived from its rolling cycle_start_date plus the
+  // class's weekly slots, so they need a separate query + in-memory filter
+  // against targetDates instead of the `.in("classes.scheduled_date", ...)`
+  // filter above.
   const { data: fixedRegistrationsRaw, error: fixedError } = await supabase
     .from("registrations")
     .select(
@@ -71,23 +66,23 @@ export async function GET(req: NextRequest) {
       contact_lastname,
       contact_email,
       contact_phone,
-      cycle_month,
+      cycle_start_date,
       classes!inner(
         id,
         title,
         instructor,
         class_type,
-        weekday,
         start_time,
         price,
-        is_active
+        is_active,
+        fixed_class_slots(weekday, start_time, end_time)
       )
     `,
     )
     .eq("status", "pending")
     .eq("classes.is_active", true)
     .eq("classes.class_type", "fijas")
-    .not("cycle_month", "is", null);
+    .not("cycle_start_date", "is", null);
 
   if (fixedError) {
     console.error("Error fetching unpaid fixed-class registrations:", fixedError);
@@ -96,15 +91,24 @@ export async function GET(req: NextRequest) {
   const fixedRegistrations = (fixedRegistrationsRaw ?? [])
     .map((reg) => {
       const cls = reg.classes as any;
-      if (cls?.weekday == null || !reg.cycle_month) return null;
-      const sessionDates = getCycleSessionDates(cls.weekday, reg.cycle_month);
-      const matchedDate = sessionDates.find((d) => targetDates.includes(d));
-      if (!matchedDate) return null;
-      // Reshape into the same "classes.scheduled_date" shape the dated
-      // query returns, so both feed the same grouping logic below.
+      const slots = (cls?.fixed_class_slots ?? []) as
+        | { weekday: number; start_time: string; end_time: string }[]
+        | undefined;
+      if (!slots || slots.length === 0 || !reg.cycle_start_date) return null;
+      const window = buildCycleWindow(slots, reg.cycle_start_date);
+      const matched = window.sessions.find((s) => targetDates.includes(s.date));
+      if (!matched) return null;
+      // Reshape into the same "classes.scheduled_date"/"start_time" shape
+      // the dated query returns, so both feed the same grouping logic
+      // below — using the matched slot's own time, not the class's single
+      // mirrored start_time (which only reflects its earliest slot).
       return {
         ...reg,
-        classes: { ...cls, scheduled_date: matchedDate },
+        classes: {
+          ...cls,
+          scheduled_date: matched.date,
+          start_time: matched.slot.start_time,
+        },
       };
     })
     .filter((r): r is NonNullable<typeof r> => r !== null);

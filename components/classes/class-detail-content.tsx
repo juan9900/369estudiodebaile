@@ -10,6 +10,7 @@ import { CLASS_LEVELS, WHATSAPP_URL } from "@/constants";
 import { LinkButton } from "@/components/ui/link-button";
 import { useScrollReveal } from "@/lib/hooks/use-scroll-reveal";
 import { useCycleOptions } from "@/lib/hooks/use-cycle-options";
+import { useFixedClassSlots } from "@/lib/hooks/use-fixed-class-slots";
 import { isFixedClass } from "@/lib/utils/class-type";
 import { ClassScheduleMeta } from "@/components/classes/class-schedule-meta";
 
@@ -22,8 +23,10 @@ interface ClassDetailContentProps {
 export function ClassDetailContent({ danceClass }: ClassDetailContentProps) {
   const isFixed = isFixedClass(danceClass);
   const { options: cycles } = useCycleOptions(danceClass);
-  // Prefer the earliest cycle with spots open; fall back to the next month
-  // (last option) so the page still shows something while cycles load.
+  const { slotsByClass } = useFixedClassSlots(isFixed ? [danceClass.id] : []);
+  const slots = slotsByClass.get(danceClass.id) ?? [];
+  // Prefer the earliest cycle with spots open; fall back to the last option
+  // (the next cycle after) so the page still shows something while loading.
   const nextCycle =
     cycles.find((c) => !c.disabled) ?? cycles[cycles.length - 1];
 
@@ -63,7 +66,7 @@ export function ClassDetailContent({ danceClass }: ClassDetailContentProps) {
     >
       {/* Meta + title */}
       <div className="px-[22px] pt-6 md:col-start-1 md:row-start-1 md:px-0 md:pt-0">
-        <ClassScheduleMeta danceClass={danceClass} />
+        <ClassScheduleMeta danceClass={danceClass} slots={slots} />
         <h1 className="mt-3 font-archivo text-[50px] font-black leading-[0.95] tracking-[-0.04em] text-ink md:text-[84px]">
           {title}
         </h1>
@@ -93,13 +96,13 @@ export function ClassDetailContent({ danceClass }: ClassDetailContentProps) {
               isFixed && nextCycle
                 ? {
                     label: "Ciclo",
-                    value: `${formatSessionDatesList(nextCycle.sessions)} (${nextCycle.sessions.length} clases)`,
+                    value: `${formatSessionDatesList(nextCycle.sessions.map((s) => s.date))} (${nextCycle.sessionCount} clases)`,
                     Icon: Tag,
                   }
                 : null,
               danceClass.price !== null
                 ? {
-                    label: isFixed ? "Precio mensual (4 clases)" : "Precio",
+                    label: isFixed ? "Precio del ciclo (4 semanas)" : "Precio",
                     value: `$${danceClass.price}`,
                     Icon: Tag,
                   }
@@ -202,7 +205,7 @@ export function ClassDetailContent({ danceClass }: ClassDetailContentProps) {
         <div>
           {danceClass.price !== null && (
             <p className="text-lg font-extrabold text-ink">
-              {isFixed ? "Mensual" : "Precio"}: ${danceClass.price}
+              {isFixed ? "Ciclo" : "Precio"}: ${danceClass.price}
             </p>
           )}
         </div>

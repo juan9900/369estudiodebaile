@@ -65,3 +65,58 @@ export function getOccupiedSlots(
 
   return occupied;
 }
+
+/**
+ * Valid start-time options given existing classes to avoid. When
+ * `requireFullHour` is set (used for "clases", which always book a fixed
+ * 1-hour block), a slot is only offered if the full hour after it is also
+ * free and doesn't run past closing time.
+ */
+export function getStartTimeOptions(
+  existingClasses: { start_time: string; end_time: string }[],
+  allSlots: string[],
+  closingTime: string,
+  requireFullHour: boolean,
+): string[] {
+  const occupied = getOccupiedSlots(existingClasses, allSlots);
+  return allSlots.filter((slot) => {
+    if (occupied.has(slot)) return false;
+    if (requireFullHour) {
+      const endSlot = addMinutes(slot, 60);
+      if (endSlot > closingTime) return false;
+      if (occupied.has(endSlot)) return false;
+    }
+    return true;
+  });
+}
+
+/**
+ * Valid end-time options strictly after `startTime`, capped 30 minutes
+ * before whichever existing class starts next (enforcing the same gap as
+ * getOccupiedSlots).
+ */
+export function getEndTimeOptions(
+  startTime: string,
+  existingClasses: { start_time: string; end_time: string }[],
+  allSlots: string[],
+): string[] {
+  if (!startTime) return [];
+  const afterStart = allSlots.filter((s) => s > startTime);
+
+  let cap: string | null = null;
+  for (const cls of existingClasses) {
+    const clsStart = cls.start_time.slice(0, 5);
+    if (clsStart > startTime && (cap === null || clsStart < cap)) {
+      cap = clsStart;
+    }
+  }
+  if (!cap) return afterStart;
+
+  // Subtract 30 min from cap to enforce the gap: if the next class starts
+  // at 13:00, this one must end by 12:30 at the latest.
+  const [capH, capM] = cap.split(":").map(Number);
+  const capMinus30 = capH * 60 + capM - 30;
+  const adjustedCap = `${String(Math.floor(capMinus30 / 60)).padStart(2, "0")}:${String(capMinus30 % 60).padStart(2, "0")}`;
+
+  return afterStart.filter((s) => s <= adjustedCap);
+}

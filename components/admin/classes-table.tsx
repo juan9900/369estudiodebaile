@@ -5,10 +5,12 @@ import type { PaginationState } from "@tanstack/react-table";
 import { useReactTable, getCoreRowModel } from "@tanstack/react-table";
 
 import { createClient } from "@/lib/supabase/client";
-import type { DanceClass } from "@/lib/types/database";
 import { DataTable } from "@/components/ui/data-table";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
-import { getClassesColumns } from "@/components/admin/classes-table-columns";
+import {
+  getClassesColumns,
+  type DanceClassRow,
+} from "@/components/admin/classes-table-columns";
 import { DeleteClassDialog } from "@/components/admin/delete-class-dialog";
 
 const PAGE_SIZE = 20;
@@ -27,7 +29,7 @@ interface DeleteDialogInfo {
 }
 
 export function ClassesTable({ mode }: ClassesTableProps) {
-  const [classes, setClasses] = useState<DanceClass[]>([]);
+  const [classes, setClasses] = useState<DanceClassRow[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState<PaginationState>({
@@ -48,7 +50,9 @@ export function ClassesTable({ mode }: ClassesTableProps) {
     const baseQuery = () =>
       supabase
         .from("classes")
-        .select("*, registrations(count)", { count: "exact" })
+        .select("*, registrations(count), fixed_class_slots(weekday, start_time, end_time)", {
+          count: "exact",
+        })
         .in("registrations.status", ["confirmed", "pending"]);
 
     let countQuery = supabase
@@ -93,7 +97,7 @@ export function ClassesTable({ mode }: ClassesTableProps) {
         ...c,
         current_enrollment:
           (c.registrations as { count: number }[])?.[0]?.count ?? 0,
-      })) as DanceClass[],
+      })) as DanceClassRow[],
     );
     setLoading(false);
   }, [mode, pagination.pageIndex]);

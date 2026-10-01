@@ -41,10 +41,23 @@ export interface DanceClass {
   song_artist: string | null;
   song_youtube_url: string | null;
   class_type: ClassType;
-  /** Only set for class_type = "fijas": 0=domingo..6=sábado (matches JS getUTCDay()). */
+  /** For class_type = "fijas": weekday of the earliest slot, mirrored from fixed_class_slots by a DB trigger. 0=domingo..6=sábado (matches JS getUTCDay()). Read fixed_class_slots directly for the full weekly schedule. */
   weekday: number | null;
   instructor_instagram_url: string | null;
   use_genre_as_title: boolean;
+  /** For class_type = "fijas": earliest date the class can be taught. No session/cycle starts before this date. */
+  starts_on: string | null;
+  /** Timestamp from which the class is visible on the public site. NULL = visible as soon as is_active. */
+  published_at: string | null;
+}
+
+/** A weekly meeting time for a class_type = "fijas" class — see supabase/migrations/018_fixed_class_slots.sql. */
+export interface FixedClassSlot {
+  id: string;
+  class_id: string;
+  weekday: number;
+  start_time: string;
+  end_time: string;
 }
 
 export type RegistrationStatus = "pending" | "confirmed" | "cancelled";
@@ -68,12 +81,12 @@ export interface Registration {
   paid_amount: number | null;
   promo_pack: number | null;
   purchase_id: string | null;
-  /** Fixed-class ("fijas") purchases only: first day of the purchased monthly cycle. */
-  cycle_month: string | null;
-  /** Sessions covered by this cycle: 4 = full month, less = prorated mid-month join. */
+  /** Fixed-class ("fijas") purchases only: date of the first session in this rolling cycle. */
+  cycle_start_date: string | null;
+  /** Fixed-class ("fijas") purchases only: date of the last session in this rolling cycle. */
+  cycle_end_date: string | null;
+  /** Sessions covered by this cycle: SESSIONS_PER_CYCLE * number of weekly slots on the class. */
   cycle_sessions: number | null;
-  /** Date of the first session actually included in this registration's cycle. */
-  cycle_first_session: string | null;
 }
 
 export type PromoDiscountType =
@@ -118,7 +131,11 @@ export interface RegistrationWithClass extends Registration {
     | "start_time"
     | "end_time"
     | "price"
-  >;
+    | "starts_on"
+  > & {
+    /** Only populated when the join requests it (fixed-class registrations). */
+    fixed_class_slots?: Pick<FixedClassSlot, "weekday" | "start_time" | "end_time">[];
+  };
 }
 
 export interface RegistrationWithProfile extends Registration {

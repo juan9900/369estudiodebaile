@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { buildStatusChangeEmail } from "@/lib/utils/checkout-notifications";
+import { formatCycleRange } from "@/lib/utils/date-format";
+import { formatSlotsFull } from "@/lib/utils/fixed-class-slots";
 
 interface NotifyPackStatusParams {
   purchaseId: string;
@@ -20,7 +22,7 @@ export async function notifyPackStatusIfResolved(
   const { data: siblings } = await supabase
     .from("registrations")
     .select(
-      "contact_name, contact_lastname, contact_email, status, paid_amount, classes(title, instructor, scheduled_date, start_time, price)",
+      "contact_name, contact_lastname, contact_email, status, paid_amount, cycle_start_date, cycle_end_date, cycle_sessions, classes(title, instructor, class_type, scheduled_date, start_time, price, fixed_class_slots(weekday, start_time, end_time))",
     )
     .eq("purchase_id", purchaseId);
 
@@ -30,14 +32,23 @@ export async function notifyPackStatusIfResolved(
   if (stillPending && !force) return;
 
   const first = siblings[0] as any;
-  const classes = siblings.map((r: any) => ({
-    className: r.classes.title,
-    instructor: r.classes.instructor,
-    day: r.classes.scheduled_date,
-    hour: r.classes.start_time,
-    price: r.paid_amount ?? r.classes.price,
-    status: r.status,
-  }));
+  const classes = siblings.map((r: any) => {
+    const isFixed = r.classes.class_type === "fijas";
+    return {
+      className: r.classes.title,
+      instructor: r.classes.instructor,
+      day:
+        isFixed && r.cycle_start_date && r.cycle_end_date
+          ? `${formatCycleRange(r.cycle_start_date, r.cycle_end_date)} · ${r.cycle_sessions ?? "—"} clases`
+          : r.classes.scheduled_date,
+      hour:
+        isFixed && r.classes.fixed_class_slots?.length
+          ? formatSlotsFull(r.classes.fixed_class_slots)
+          : r.classes.start_time,
+      price: r.paid_amount ?? r.classes.price,
+      status: r.status,
+    };
+  });
   const totalPrice = classes.reduce(
     (sum: number, c: any) => sum + (c.price ?? 0),
     0,

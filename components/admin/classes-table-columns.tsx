@@ -5,8 +5,13 @@ import { Pencil, Users } from "lucide-react";
 import { type ColumnDef } from "@tanstack/react-table";
 
 import { Badge } from "@/components/ui/badge";
-import type { DanceClass } from "@/lib/types/database";
-import { formatWeeklyScheduleShort } from "@/lib/utils/date-format";
+import type { DanceClass, FixedClassSlot } from "@/lib/types/database";
+import { formatSlotsFull, formatSlotsShort } from "@/lib/utils/fixed-class-slots";
+
+/** A DanceClass row as fetched by ClassesTable, with its fixed_class_slots embed. */
+export interface DanceClassRow extends DanceClass {
+  fixed_class_slots?: Pick<FixedClassSlot, "weekday" | "start_time" | "end_time">[];
+}
 
 function formatClassDate(dateStr: string): string {
   const [year, month, day] = dateStr.split("-").map(Number);
@@ -15,10 +20,17 @@ function formatClassDate(dateStr: string): string {
   return `${weekday} ${day.toString().padStart(2, "0")}/${month.toString().padStart(2, "0")}/${year}`;
 }
 
+function isScheduledForFuture(cls: DanceClassRow): boolean {
+  const todayIso = new Date().toISOString();
+  const notStartedYet = !!cls.starts_on && cls.starts_on > todayIso.split("T")[0];
+  const notPublishedYet = !!cls.published_at && cls.published_at > todayIso;
+  return notStartedYet || notPublishedYet;
+}
+
 export function getClassesColumns(
   onDelete: (id: string) => void,
   mode: "upcoming" | "past" | "cancelled" = "upcoming",
-): ColumnDef<DanceClass>[] {
+): ColumnDef<DanceClassRow>[] {
   return [
     {
       id: "clase",
@@ -36,6 +48,13 @@ export function getClassesColumns(
           return (
             <Badge className="bg-red-100 text-red-700 hover:bg-red-100">
               Cancelada
+            </Badge>
+          );
+        }
+        if (cls.is_active && isScheduledForFuture(cls)) {
+          return (
+            <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">
+              Programada
             </Badge>
           );
         }
@@ -57,8 +76,13 @@ export function getClassesColumns(
       header: "Fecha",
       cell: ({ row }) => {
         const cls = row.original;
-        if (cls.class_type === "fijas" && cls.weekday != null) {
-          return formatWeeklyScheduleShort(cls.weekday, cls.start_time);
+        if (cls.class_type === "fijas") {
+          const slots = cls.fixed_class_slots ?? [];
+          return slots.length > 0
+            ? formatSlotsShort(slots)
+            : cls.weekday != null
+              ? formatSlotsShort([{ weekday: cls.weekday, start_time: cls.start_time, end_time: cls.end_time }])
+              : "—";
         }
         return cls.scheduled_date ? formatClassDate(cls.scheduled_date) : "—";
       },
@@ -68,6 +92,9 @@ export function getClassesColumns(
       header: "Horario",
       cell: ({ row }) => {
         const cls = row.original;
+        if (cls.class_type === "fijas" && (cls.fixed_class_slots?.length ?? 0) > 0) {
+          return formatSlotsFull(cls.fixed_class_slots!);
+        }
         return `${cls.start_time.slice(0, 5)} – ${cls.end_time.slice(0, 5)}`;
       },
     },
@@ -94,7 +121,7 @@ export function getClassesColumns(
         const { price, class_type } = row.original;
         if (price === null) return "—";
         return class_type === "fijas"
-          ? `$${price.toFixed(2)}/mes`
+          ? `$${price.toFixed(2)}/ciclo`
           : `$${price.toFixed(2)}`;
       },
     },

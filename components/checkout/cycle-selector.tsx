@@ -11,9 +11,9 @@ interface CycleSelectorProps {
   onBack: () => void;
 }
 
-/** Sibling of PromoSelector, for "clases fijas": lets the student pick the
- * monthly cycle to buy — the rest of the current month (prorated, if any
- * sessions remain) or the full next month. */
+/** Sibling of PromoSelector, for "clases fijas": lets the student pick when
+ * their 4-week cycle starts — the next available session, or the cycle
+ * after that. Price is always the flat classes.price, never prorated. */
 export function CycleSelector({
   options,
   loading,
@@ -24,11 +24,11 @@ export function CycleSelector({
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-3xl font-black text-white mb-2">
-          Elige tu ciclo mensual
+          Elige cuándo empiezas
         </h2>
         <p className="text-white/50 text-sm">
-          Cada ciclo incluye 4 clases, una por semana, al mismo horario. Si
-          te unes a mitad de mes, pagas solo las clases que quedan.
+          Cada ciclo dura 4 semanas, con una clase por cada día programado,
+          al mismo horario.
         </p>
       </div>
 
@@ -38,14 +38,14 @@ export function CycleSelector({
         <div className="flex flex-col gap-3">
           {options.map((option) => (
             <button
-              key={option.month}
+              key={option.startDate}
               type="button"
               disabled={option.disabled}
               onClick={() => onSelect(option)}
               className="w-full rounded-lg border bg-white p-4 text-left text-primary font-bold transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <div className="flex items-center justify-between">
-                <span className="text-lg">{option.monthLabel}</span>
+                <span className="text-lg">{option.label}</span>
                 {option.price != null && (
                   <span className="text-lg font-black">${option.price}</span>
                 )}
@@ -54,7 +54,7 @@ export function CycleSelector({
                 {option.note}
               </span>
               <span className="block text-xs text-muted2-2 mt-1">
-                {formatSessionDatesList(option.sessions)}
+                {formatSessionDatesList(option.sessions.map((s) => s.date))}
               </span>
               {option.disabled && (
                 <span className="block text-xs font-bold text-red-600 mt-1">

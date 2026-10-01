@@ -27,10 +27,18 @@ import { MediaPickerDialog } from "@/components/admin/media-picker-dialog";
 import Image from "next/image";
 import {
   generateTimeSlots,
-  getOccupiedSlots,
+  getStartTimeOptions,
+  getEndTimeOptions,
   formatTimeAMPM,
-  addMinutes,
 } from "@/lib/utils/time-slots";
+import { toDatetimeLocalValue } from "@/lib/utils/date-format";
+import { sortSlots } from "@/lib/utils/fixed-class-slots";
+import {
+  useFixedClassSlotEditor,
+  type EditableSlot,
+} from "@/lib/hooks/use-fixed-class-slot-editor";
+import { useFixedClassSlotConflicts } from "@/lib/hooks/use-fixed-class-slot-conflicts";
+import { saveFixedClassSlots } from "@/lib/utils/save-fixed-class-slots";
 
 interface ClassFormProps {
   initialData?: DanceClass;
@@ -49,9 +57,12 @@ export function ClassForm({ initialData }: ClassFormProps) {
     description: initialData?.description ?? "",
     instructor: initialData?.instructor ?? "",
     scheduled_date: initialData?.scheduled_date ?? "",
-    weekday: initialData?.weekday != null ? String(initialData.weekday) : "",
     start_time: initialData?.start_time?.slice(0, 5) ?? "",
     end_time: initialData?.end_time?.slice(0, 5) ?? "",
+    starts_on: initialData?.starts_on ?? "",
+    published_at: initialData?.published_at
+      ? toDatetimeLocalValue(initialData.published_at)
+      : "",
     max_capacity: initialData?.max_capacity ?? 20,
     price:
       initialData?.price?.toString() ??
@@ -78,6 +89,50 @@ export function ClassForm({ initialData }: ClassFormProps) {
     { id: string; start_time: string; end_time: string }[]
   >([]);
 
+  const isFixed = form.class_type === "fijas";
+
+  // The weekly slots for a "fijas" class. For a brand-new class this starts
+  // as a single empty row; when editing one, it's seeded from
+  // fixed_class_slots below (DanceClass itself only carries the mirrored
+  // earliest slot, not the full schedule).
+  const slotEditor = useFixedClassSlotEditor();
+
+  useEffect(() => {
+    if (!initialData || initialData.class_type !== "fijas") return;
+    let active = true;
+    async function fetchSlots() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("fixed_class_slots")
+        .select("weekday, start_time, end_time")
+        .eq("class_id", initialData!.id);
+      if (!active || !data || data.length === 0) return;
+      slotEditor.setSlots(
+        sortSlots(data as { weekday: number; start_time: string; end_time: string }[]).map(
+          (s): EditableSlot => ({
+            weekday: String(s.weekday),
+            start_time: s.start_time.slice(0, 5),
+            end_time: s.end_time.slice(0, 5),
+          }),
+        ),
+      );
+    }
+    fetchSlots();
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialData?.id, initialData?.class_type]);
+
+  const chosenWeekdays = slotEditor.slots
+    .map((s) => s.weekday)
+    .filter(Boolean)
+    .map(Number);
+  const slotConflictsByWeekday = useFixedClassSlotConflicts(
+    isFixed ? chosenWeekdays : [],
+    initialData?.id,
+  );
+
   // Fetch studio settings on mount
   useEffect(() => {
     async function fetchSettings() {
@@ -94,38 +149,20 @@ export function ClassForm({ initialData }: ClassFormProps) {
     fetchSettings();
   }, []);
 
-  const isFixed = form.class_type === "fijas";
-
-  // Fetch existing classes to detect schedule conflicts: by scheduled_date
-  // for dated classes, or by weekday for fixed classes (which repeat every
-  // week and have no scheduled_date to key off).
+  // Fetch existing classes to detect schedule conflicts for DATED classes,
+  // by scheduled_date. Fixed-class slot conflicts are handled separately
+  // (per weekday) by useFixedClassSlotConflicts above.
   useEffect(() => {
     async function fetchClasses() {
-      const supabase = createClient();
-
       if (isFixed) {
-        if (form.weekday === "") {
-          setExistingClasses([]);
-          return;
-        }
-        const { data } = await supabase
-          .from("classes")
-          .select("id, start_time, end_time")
-          .eq("class_type", "fijas")
-          .eq("weekday", Number(form.weekday));
-        if (data) {
-          const filtered = initialData?.id
-            ? data.filter((c) => c.id !== initialData.id)
-            : data;
-          setExistingClasses(filtered);
-        }
+        setExistingClasses([]);
         return;
       }
-
       if (!form.scheduled_date) {
         setExistingClasses([]);
         return;
       }
+      const supabase = createClient();
       const { data } = await supabase
         .from("classes")
         .select("id, start_time, end_time")
@@ -139,53 +176,21 @@ export function ClassForm({ initialData }: ClassFormProps) {
       }
     }
     fetchClasses();
-  }, [isFixed, form.scheduled_date, form.weekday, initialData?.id]);
+  }, [isFixed, form.scheduled_date, initialData?.id]);
 
   const allSlots = generateTimeSlots(openingTime, closingTime);
-  const occupiedSlots = getOccupiedSlots(existingClasses, allSlots);
 
   const isFreeSchedule = form.class_type !== "clases";
 
-  // For normal classes, a start slot is only valid if the full 1-hour block is free
-  const startTimeSlots = allSlots.filter((slot) => {
-    if (occupiedSlots.has(slot)) return false;
-    if (!isFreeSchedule) {
-      const endSlot = addMinutes(slot, 60);
-      // end slot must not exceed closing time
-      if (endSlot > closingTime) return false;
-      // the slot at start+1h must also be free (not occupied by another class)
-      if (occupiedSlots.has(endSlot)) return false;
-    }
-    return true;
-  });
-
-  // End-time slots: only slots strictly after start_time, capped at next occupied slot
-  const endTimeSlots = (() => {
-    if (!form.start_time) return [];
-    const afterStart = allSlots.filter((s) => s > form.start_time);
-
-    // Find the earliest occupied slot after start_time (which would be another class's start)
-    // We cap end_time at the start of the next existing class
-    let cap: string | null = null;
-    for (const cls of existingClasses) {
-      const clsStart = cls.start_time.slice(0, 5);
-      if (clsStart > form.start_time) {
-        if (cap === null || clsStart < cap) {
-          cap = clsStart;
-        }
-      }
-    }
-
-    if (!cap) return afterStart;
-
-    // Subtract 30 min from cap to enforce the gap: if next class starts at 13:00,
-    // your class must end by 12:30 at the latest.
-    const [capH, capM] = cap.split(":").map(Number);
-    const capMinus30 = capH * 60 + capM - 30;
-    const adjustedCap = `${String(Math.floor(capMinus30 / 60)).padStart(2, "0")}:${String(capMinus30 % 60).padStart(2, "0")}`;
-
-    return afterStart.filter((s) => s <= adjustedCap);
-  })();
+  // For normal ("clases") classes, a start slot is only valid if the full
+  // 1-hour block after it is also free.
+  const startTimeSlots = getStartTimeOptions(
+    existingClasses,
+    allSlots,
+    closingTime,
+    !isFreeSchedule,
+  );
+  const endTimeSlots = getEndTimeOptions(form.start_time, existingClasses, allSlots);
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -218,14 +223,43 @@ export function ClassForm({ initialData }: ClassFormProps) {
     } = await supabase.auth.getUser();
     if (!user) return;
 
+    let fixedSlots: { weekday: number; start_time: string; end_time: string }[] = [];
+    if (isFixed) {
+      const incomplete = slotEditor.slots.some(
+        (s) => !s.weekday || !s.start_time || !s.end_time,
+      );
+      if (incomplete) {
+        setError("Completa el día y el horario de cada franja.");
+        setLoading(false);
+        return;
+      }
+      fixedSlots = sortSlots(
+        slotEditor.slots.map((s) => ({
+          weekday: Number(s.weekday),
+          start_time: s.start_time,
+          end_time: s.end_time,
+        })),
+      );
+    }
+    // The classes row needs some non-null weekday/start_time/end_time right
+    // away (classes_schedule_shape CHECK + NOT NULL columns); the earliest
+    // slot is a safe placeholder — fixed_class_slots' trigger recomputes the
+    // authoritative mirror right after saveFixedClassSlots runs below.
+    const earliestSlot = fixedSlots[0];
+
     const payload = {
       title: form.title,
       description: form.description || null,
       instructor: form.instructor,
       scheduled_date: isFixed ? null : form.scheduled_date,
-      weekday: isFixed ? Number(form.weekday) : null,
-      start_time: form.start_time,
-      end_time: form.end_time,
+      weekday: isFixed ? earliestSlot.weekday : null,
+      start_time: isFixed ? earliestSlot.start_time : form.start_time,
+      end_time: isFixed ? earliestSlot.end_time : form.end_time,
+      starts_on: isFixed && form.starts_on ? form.starts_on : null,
+      published_at:
+        isFixed && form.published_at
+          ? new Date(form.published_at).toISOString()
+          : null,
       max_capacity: Number(form.max_capacity),
       price: form.price ? Number(form.price) : null,
       genre: form.genre,
@@ -243,17 +277,25 @@ export function ClassForm({ initialData }: ClassFormProps) {
     };
 
     try {
+      let classId: string;
       if (initialData) {
         const { error } = await supabase
           .from("classes")
           .update(payload)
           .eq("id", initialData.id);
         if (error) throw error;
+        classId = initialData.id;
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from("classes")
-          .insert({ ...payload, created_by: user.id });
+          .insert({ ...payload, created_by: user.id })
+          .select("id")
+          .single();
         if (error) throw error;
+        classId = data.id;
+      }
+      if (isFixed) {
+        await saveFixedClassSlots(supabase, classId, fixedSlots);
       }
       router.push("/admin/classes");
     } catch (e) {
@@ -322,22 +364,24 @@ export function ClassForm({ initialData }: ClassFormProps) {
                 name="class_type"
                 value={value}
                 checked={form.class_type === value}
-                onChange={() =>
+                onChange={() => {
                   setForm((prev) => ({
                     ...prev,
                     class_type: value,
                     scheduled_date: "",
-                    weekday: "",
                     start_time: "",
                     end_time: "",
+                    starts_on: "",
+                    published_at: "",
                     price:
                       value === "clases"
                         ? "5"
                         : prev.class_type === "clases"
                           ? ""
                           : prev.price,
-                  }))
-                }
+                  }));
+                  slotEditor.setSlots([{ weekday: "", start_time: "", end_time: "" }]);
+                }}
               />
               {CLASS_TYPES[value].singular}
             </label>
@@ -394,34 +438,159 @@ export function ClassForm({ initialData }: ClassFormProps) {
       </div>
 
       {isFixed ? (
-        <div className="grid gap-2">
-          <Label htmlFor="weekday">Día de la semana</Label>
-          <Select
-            value={form.weekday}
-            onValueChange={(val) =>
-              setForm((prev) => ({
-                ...prev,
-                weekday: val,
-                start_time: "",
-                end_time: "",
-              }))
-            }
+        <div className="grid gap-3">
+          <Label>Días y horarios</Label>
+          {slotEditor.slots.map((slot, i) => {
+            const rowConflicts = slotConflictsByWeekday.get(Number(slot.weekday)) ?? [];
+            const rowStartOptions = slot.weekday
+              ? getStartTimeOptions(rowConflicts, allSlots, closingTime, false)
+              : [];
+            const rowEndOptions = slot.start_time
+              ? getEndTimeOptions(slot.start_time, rowConflicts, allSlots)
+              : [];
+            const usedWeekdays = slotEditor.usedWeekdaysExcept(i);
+
+            return (
+              <div
+                key={i}
+                className="grid grid-cols-[1fr_1fr_1fr_auto] items-end gap-2 rounded-md border p-3"
+              >
+                <div className="grid gap-1">
+                  <Label className="text-xs text-muted-foreground">Día</Label>
+                  <Select
+                    value={slot.weekday}
+                    onValueChange={(val) =>
+                      slotEditor.updateSlot(i, {
+                        weekday: val,
+                        start_time: "",
+                        end_time: "",
+                      })
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Día" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {WEEKDAYS_ES.map((label, index) => {
+                        const value = String(index);
+                        const disabled = usedWeekdays.includes(value);
+                        return (
+                          <SelectItem key={value} value={value} disabled={disabled}>
+                            {label}
+                            {disabled ? " (ya usado)" : ""}
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid gap-1">
+                  <Label className="text-xs text-muted-foreground">Hora inicio</Label>
+                  <Select
+                    value={slot.start_time}
+                    onValueChange={(val) =>
+                      slotEditor.updateSlot(i, { start_time: val, end_time: "" })
+                    }
+                    disabled={!slot.weekday}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Inicio" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {rowStartOptions.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {formatTimeAMPM(s)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid gap-1">
+                  <Label className="text-xs text-muted-foreground">Hora fin</Label>
+                  <Select
+                    value={slot.end_time}
+                    onValueChange={(val) => slotEditor.updateSlot(i, { end_time: val })}
+                    disabled={!slot.start_time || rowEndOptions.length === 0}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue
+                        placeholder={
+                          slot.start_time && rowEndOptions.length === 0
+                            ? "No disponible"
+                            : "Fin"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {rowEndOptions.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {formatTimeAMPM(s)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => slotEditor.removeSlot(i)}
+                  disabled={slotEditor.slots.length === 1}
+                >
+                  Quitar
+                </Button>
+              </div>
+            );
+          })}
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={slotEditor.addSlot}
+            disabled={slotEditor.slots.length >= WEEKDAYS_ES.length}
+            className="w-fit"
           >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Seleccionar día" />
-            </SelectTrigger>
-            <SelectContent>
-              {WEEKDAYS_ES.map((label, index) => (
-                <SelectItem key={label} value={String(index)}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            + Añadir día
+          </Button>
+
           <p className="text-xs text-muted-foreground">
-            La clase se dicta todas las semanas ese día, sin fecha de fin. Los
-            alumnos reservan ciclos mensuales de 4 clases.
+            La clase se dicta todas las semanas en estos días, sin fecha de
+            fin. Los alumnos reservan un ciclo de 4 semanas, con 4 clases de
+            cada día elegido.
           </p>
+
+          <div className="grid grid-cols-2 gap-4 pt-2">
+            <div className="grid gap-2">
+              <Label htmlFor="starts_on">Fecha de inicio (opcional)</Label>
+              <Input
+                id="starts_on"
+                name="starts_on"
+                type="date"
+                value={form.starts_on}
+                onChange={handleChange}
+              />
+              <p className="text-xs text-muted-foreground">
+                Ningún ciclo empezará antes de esta fecha.
+              </p>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="published_at">Publicar a partir de (opcional)</Label>
+              <Input
+                id="published_at"
+                name="published_at"
+                type="datetime-local"
+                value={form.published_at}
+                onChange={handleChange}
+              />
+              <p className="text-xs text-muted-foreground">
+                Antes de esta fecha, solo el admin la ve.
+              </p>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="grid gap-2">
@@ -446,114 +615,115 @@ export function ClassForm({ initialData }: ClassFormProps) {
         </div>
       )}
 
-      {isFreeSchedule ? (
-        <div className="grid grid-cols-2 gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="start_time">Hora inicio</Label>
-            <Select
-              value={form.start_time}
-              onValueChange={(val) =>
-                setForm((prev) => ({ ...prev, start_time: val, end_time: "" }))
-              }
-              disabled={isFixed ? !form.weekday : !form.scheduled_date}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Seleccionar" />
-              </SelectTrigger>
-              <SelectContent>
-                {startTimeSlots.map((slot) => (
-                  <SelectItem key={slot} value={slot}>
-                    {formatTimeAMPM(slot)}
-                  </SelectItem>
-                ))}
-                {allSlots
-                  .filter((slot) => !startTimeSlots.includes(slot))
-                  .map((slot) => (
-                    <SelectItem key={slot} value={slot} disabled>
-                      {formatTimeAMPM(slot)} (ocupado)
+      {!isFixed &&
+        (isFreeSchedule ? (
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="start_time">Hora inicio</Label>
+              <Select
+                value={form.start_time}
+                onValueChange={(val) =>
+                  setForm((prev) => ({ ...prev, start_time: val, end_time: "" }))
+                }
+                disabled={!form.scheduled_date}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Seleccionar" />
+                </SelectTrigger>
+                <SelectContent>
+                  {startTimeSlots.map((slot) => (
+                    <SelectItem key={slot} value={slot}>
+                      {formatTimeAMPM(slot)}
                     </SelectItem>
                   ))}
-              </SelectContent>
-            </Select>
+                  {allSlots
+                    .filter((slot) => !startTimeSlots.includes(slot))
+                    .map((slot) => (
+                      <SelectItem key={slot} value={slot} disabled>
+                        {formatTimeAMPM(slot)} (ocupado)
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="end_time">Hora fin</Label>
+              <Select
+                value={form.end_time}
+                onValueChange={(val) =>
+                  setForm((prev) => ({ ...prev, end_time: val }))
+                }
+                disabled={!form.start_time || endTimeSlots.length === 0}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue
+                    placeholder={
+                      form.start_time && endTimeSlots.length === 0
+                        ? "No disponible"
+                        : "Seleccionar"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {endTimeSlots.map((slot) => (
+                    <SelectItem key={slot} value={slot}>
+                      {formatTimeAMPM(slot)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+        ) : (
           <div className="grid gap-2">
-            <Label htmlFor="end_time">Hora fin</Label>
+            <Label>Horario</Label>
             <Select
-              value={form.end_time}
-              onValueChange={(val) =>
-                setForm((prev) => ({ ...prev, end_time: val }))
-              }
-              disabled={!form.start_time || endTimeSlots.length === 0}
+              value={form.start_time}
+              onValueChange={(val) => {
+                const slotData = normalClassSlotsForDay.find(
+                  (s) => s.start === val,
+                );
+                if (slotData) {
+                  setForm((prev) => ({
+                    ...prev,
+                    start_time: slotData.start,
+                    end_time: slotData.end,
+                  }));
+                }
+              }}
+              disabled={!form.scheduled_date || !isValidDayForNormalClass}
             >
               <SelectTrigger className="w-full">
                 <SelectValue
                   placeholder={
-                    form.start_time && endTimeSlots.length === 0
-                      ? "No disponible"
-                      : "Seleccionar"
+                    isValidDayForNormalClass
+                      ? "Seleccionar horario"
+                      : "Selecciona un sábado o domingo"
                   }
                 />
               </SelectTrigger>
               <SelectContent>
-                {endTimeSlots.map((slot) => (
-                  <SelectItem key={slot} value={slot}>
-                    {formatTimeAMPM(slot)}
-                  </SelectItem>
-                ))}
+                {normalClassSlotsForDay.map((slot) => {
+                  const isOccupied = existingClasses.some((cls) => {
+                    const clsStart = cls.start_time.slice(0, 5);
+                    const clsEnd = cls.end_time.slice(0, 5);
+                    return slot.start < clsEnd && slot.end > clsStart;
+                  });
+                  return (
+                    <SelectItem
+                      key={slot.start}
+                      value={slot.start}
+                      disabled={isOccupied}
+                    >
+                      {formatTimeAMPM(slot.start)} – {formatTimeAMPM(slot.end)}
+                      {isOccupied ? " (ocupado)" : ""}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>
-        </div>
-      ) : (
-        <div className="grid gap-2">
-          <Label>Horario</Label>
-          <Select
-            value={form.start_time}
-            onValueChange={(val) => {
-              const slotData = normalClassSlotsForDay.find(
-                (s) => s.start === val,
-              );
-              if (slotData) {
-                setForm((prev) => ({
-                  ...prev,
-                  start_time: slotData.start,
-                  end_time: slotData.end,
-                }));
-              }
-            }}
-            disabled={!form.scheduled_date || !isValidDayForNormalClass}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue
-                placeholder={
-                  isValidDayForNormalClass
-                    ? "Seleccionar horario"
-                    : "Selecciona un sábado o domingo"
-                }
-              />
-            </SelectTrigger>
-            <SelectContent>
-              {normalClassSlotsForDay.map((slot) => {
-                const isOccupied = existingClasses.some((cls) => {
-                  const clsStart = cls.start_time.slice(0, 5);
-                  const clsEnd = cls.end_time.slice(0, 5);
-                  return slot.start < clsEnd && slot.end > clsStart;
-                });
-                return (
-                  <SelectItem
-                    key={slot.start}
-                    value={slot.start}
-                    disabled={isOccupied}
-                  >
-                    {formatTimeAMPM(slot.start)} – {formatTimeAMPM(slot.end)}
-                    {isOccupied ? " (ocupado)" : ""}
-                  </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
+        ))}
 
       <div className="grid grid-cols-2 gap-4">
         <div className="grid gap-2">
@@ -570,7 +740,7 @@ export function ClassForm({ initialData }: ClassFormProps) {
         </div>
         <div className="grid gap-2">
           <Label htmlFor="price">
-            {isFixed ? "Precio mensual — 4 clases ($)" : "Precio ($)"}
+            {isFixed ? "Precio del ciclo — 4 semanas ($)" : "Precio ($)"}
           </Label>
           <Input
             id="price"

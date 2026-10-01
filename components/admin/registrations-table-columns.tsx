@@ -7,7 +7,7 @@ import type {
   RegistrationWithClass,
   RegistrationStatus,
 } from "@/lib/types/database";
-import { formatCycleMonthLabel } from "@/lib/utils/date-format";
+import { formatCycleRange } from "@/lib/utils/date-format";
 
 export const statusLabels: Record<RegistrationStatus, string> = {
   pending: "Pendiente",
@@ -68,8 +68,8 @@ export const columns: ColumnDef<RegistrationWithClass>[] = [
     header: "Fecha de Clase",
     cell: ({ row }) => {
       const reg = row.original;
-      if (reg.classes.class_type === "fijas" && reg.cycle_month) {
-        return `${formatCycleMonthLabel(reg.cycle_month)} · ${reg.cycle_sessions ?? 4} clases`;
+      if (reg.classes.class_type === "fijas" && reg.cycle_start_date && reg.cycle_end_date) {
+        return `${formatCycleRange(reg.cycle_start_date, reg.cycle_end_date)} · ${reg.cycle_sessions ?? "—"} clases`;
       }
       return reg.classes.scheduled_date
         ? new Date(reg.classes.scheduled_date).toLocaleDateString()
