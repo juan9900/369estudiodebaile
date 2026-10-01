@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Music2, Signal, Tag, User } from "lucide-react";
 import type { DanceClass } from "@/lib/types/database";
 import { getClassDisplayTitle } from "@/lib/utils/class-display";
-import { formatSessionDatesList } from "@/lib/utils/date-format";
 import { CLASS_LEVELS, WHATSAPP_URL } from "@/constants";
 import { LinkButton } from "@/components/ui/link-button";
 import { useScrollReveal } from "@/lib/hooks/use-scroll-reveal";
@@ -93,16 +92,9 @@ export function ClassDetailContent({ danceClass }: ClassDetailContentProps) {
                 ? { label: "Nivel", value: levelText, Icon: Signal }
                 : null,
               { label: "Género", value: danceClass.genre, Icon: Tag },
-              isFixed && nextCycle
-                ? {
-                    label: "Ciclo",
-                    value: `${formatSessionDatesList(nextCycle.sessions.map((s) => s.date))} (${nextCycle.sessionCount} clases)`,
-                    Icon: Tag,
-                  }
-                : null,
               danceClass.price !== null
                 ? {
-                    label: isFixed ? "Precio del ciclo (4 semanas)" : "Precio",
+                    label: "Precio",
                     value: `$${danceClass.price}`,
                     Icon: Tag,
                   }
@@ -205,7 +197,7 @@ export function ClassDetailContent({ danceClass }: ClassDetailContentProps) {
         <div>
           {danceClass.price !== null && (
             <p className="text-lg font-extrabold text-ink">
-              {isFixed ? "Ciclo" : "Precio"}: ${danceClass.price}
+              Precio: ${danceClass.price}
             </p>
           )}
         </div>
