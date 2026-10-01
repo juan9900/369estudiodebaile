@@ -66,7 +66,7 @@ export function ClassDetailContent({ danceClass }: ClassDetailContentProps) {
       {/* Meta + title */}
       <div className="px-[22px] pt-6 md:col-start-1 md:row-start-1 md:px-0 md:pt-0">
         <ClassScheduleMeta danceClass={danceClass} slots={slots} />
-        <h1 className="mt-3 font-archivo text-[50px] font-black leading-[0.95] tracking-[-0.04em] text-ink md:text-[84px]">
+        <h1 className="mt-3 break-words font-archivo text-[40px] font-black leading-[0.95] tracking-[-0.04em] text-ink md:text-[84px]">
           {title}
         </h1>
       </div>
