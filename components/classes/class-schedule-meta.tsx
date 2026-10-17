@@ -20,7 +20,7 @@ export function ClassScheduleMeta({ danceClass, slots }: ClassScheduleMetaProps)
   const isFixed = isFixedClass(danceClass);
 
   return (
-    <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.14em] text-vino md:text-[13px] md:tracking-[0.16em]">
+    <div className="flex flex-wrap items-center gap-2 font-mono text-xs uppercase tracking-[0.14em] text-vino md:text-[13px] md:tracking-[0.16em]">
       <Calendar size={14} strokeWidth={1.75} />
       {isFixed && slots && slots.length > 0 ? (
         <>

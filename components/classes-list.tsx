@@ -50,7 +50,7 @@ export function ClassesList({ classType }: ClassesListProps) {
               <Link
                 key={cls.id}
                 href={`/modalidades/${cls.id}`}
-                className="group grid grid-cols-[64px_1fr] gap-4 border-t border-line py-[22px] md:grid-cols-[120px_1fr_260px_120px_150px] md:items-center md:gap-8 md:py-[34px]"
+                className="group grid grid-cols-[64px_minmax(0,1fr)] gap-4 border-t border-line py-[22px] md:grid-cols-[120px_1fr_260px_120px_150px] md:items-center md:gap-8 md:py-[34px]"
               >
                 {/* Day */}
                 <div>
@@ -63,9 +63,9 @@ export function ClassesList({ classType }: ClassesListProps) {
                 </div>
 
                 {/* Name (mobile: name + instructor/time/price in one column) */}
-                <div className="md:contents">
+                <div className="min-w-0 md:contents">
                   <div>
-                    <h3 className="text-2xl font-extrabold tracking-[-0.03em] text-ink md:text-[34px]">
+                    <h3 className="break-words text-2xl font-extrabold tracking-[-0.03em] text-ink md:text-[34px]">
                       {getClassDisplayTitle(cls)}
                     </h3>
                     <div className="mt-1.5 flex flex-col gap-0.5 text-sm text-muted2 md:hidden">
@@ -85,7 +85,7 @@ export function ClassesList({ classType }: ClassesListProps) {
                           strokeWidth={1.75}
                           className="shrink-0 text-vino"
                         />
-                        <span className="truncate">
+                        <span className="min-w-0 truncate">
                           {cls.song_title}
                           {cls.song_artist
                             ? ` — ${cls.song_artist}`
