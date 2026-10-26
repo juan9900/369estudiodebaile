@@ -120,3 +120,13 @@ export function getEndTimeOptions(
 
   return afterStart.filter((s) => s <= adjustedCap);
 }
+
+/** True when a "HH:MM[:SS]" start/end pair spans something other than 1 hour. */
+export function isNonStandardDuration(start?: string | null, end?: string | null): boolean {
+  if (!start || !end) return false;
+  const toMinutes = (t: string) => {
+    const [h, m] = t.split(":").map(Number);
+    return h * 60 + m;
+  };
+  return toMinutes(end) - toMinutes(start) !== 60;
+}

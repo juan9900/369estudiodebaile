@@ -30,6 +30,7 @@ import {
   getStartTimeOptions,
   getEndTimeOptions,
   formatTimeAMPM,
+  isNonStandardDuration,
 } from "@/lib/utils/time-slots";
 import { toDatetimeLocalValue } from "@/lib/utils/date-format";
 import { sortSlots } from "@/lib/utils/fixed-class-slots";
@@ -180,7 +181,13 @@ export function ClassForm({ initialData }: ClassFormProps) {
 
   const allSlots = generateTimeSlots(openingTime, closingTime);
 
-  const isFreeSchedule = form.class_type !== "clases";
+  // "Clase suelta" normally uses the fixed 1-hour weekend blocks; the admin can
+  // opt out to pick any date and start/end time (e.g. a 1.5h special class).
+  const [customSchedule, setCustomSchedule] = useState(
+    initialData?.class_type === "clases" &&
+      isNonStandardDuration(initialData.start_time, initialData.end_time),
+  );
+  const isFreeSchedule = form.class_type !== "clases" || customSchedule;
 
   // For normal ("clases") classes, a start slot is only valid if the full
   // 1-hour block after it is also free.
@@ -595,7 +602,7 @@ export function ClassForm({ initialData }: ClassFormProps) {
       ) : (
         <div className="grid gap-2">
           <Label htmlFor="scheduled_date">
-            {form.class_type === "clases" ? "Fecha (Sábado o Domingo)" : "Fecha"}
+            {!isFreeSchedule ? "Fecha (Sábado o Domingo)" : "Fecha"}
           </Label>
           <Input
             id="scheduled_date"
@@ -612,6 +619,24 @@ export function ClassForm({ initialData }: ClassFormProps) {
                 Las clases normales deben ser sábado o domingo
               </p>
             )}
+        </div>
+      )}
+
+      {form.class_type === "clases" && (
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="custom_schedule"
+            checked={customSchedule}
+            onChange={(e) => {
+              setCustomSchedule(e.target.checked);
+              setForm((prev) => ({ ...prev, start_time: "", end_time: "" }));
+            }}
+            className="rounded"
+          />
+          <Label htmlFor="custom_schedule">
+            Horario personalizado (cualquier fecha y duración)
+          </Label>
         </div>
       )}
 
@@ -751,7 +776,6 @@ export function ClassForm({ initialData }: ClassFormProps) {
             value={form.price}
             onChange={handleChange}
             placeholder="0.00"
-            disabled={form.class_type === "clases"}
           />
         </div>
       </div>
